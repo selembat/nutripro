@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Deep purple rounded square background -->
+    <path
+        android:fillColor="#5A2073"
+        android:pathData="M2,0
+                          H22
+                          A2,2 0 0 1 24,2
+                          V22
+                          A2,2 0 0 1 22,24
+                          H2
+                          A2,2 0 0 1 0,22
+                          V2
+                          A2,2 0 0 1 2,0
+                          Z"/>
+
+    <!-- Lightning bolt: carb debt -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M9,2 L4,12 L7,12 L6,21 L13,11 L9,11 Z"/>
+
+    <!-- Droplet: fluid debt -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17,12
+                          C15.2,14.6 14.4,16 14.4,17.2
+                          A2.6,2.6 0 0 0 19.6,17.2
+                          C19.6,16 18.8,14.6 17,12
+                          Z"/>
+</vector>

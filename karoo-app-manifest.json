@@ -1,0 +1,10 @@
+{
+  "label": "NutriPro",
+  "packageName": "com.nutripro",
+  "latestApkUrl": "https://github.com/yourusername/nutripro/releases/latest/download/nutripro.apk",
+  "latestVersion": "1.0.0",
+  "latestVersionCode": 1,
+  "iconUrl": "https://raw.githubusercontent.com/yourusername/nutripro/main/assets/icon.png",
+  "developer": "selembat (https://github.com/selembat)",
+  "description": "Adaptive eat/drink alerts for cycling, based on carb and fluid debt, not fixed timers. Adjusts to power/HR and temp; holds alerts until it's safe."
+}

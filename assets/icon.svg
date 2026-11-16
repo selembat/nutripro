@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B3FB0"/>
+      <stop offset="100%" stop-color="#5A2073"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Lightning bolt: energy / carb debt -->
+  <path
+    d="M 272 64
+       L 160 288
+       L 232 288
+       L 200 448
+       L 352 224
+       L 272 224
+       Z"
+    fill="#FFFFFF"
+  />
+
+  <!-- Droplet: fluid debt, overlapping bottom-right -->
+  <path
+    d="M 368 300
+       C 368 300 316 362 316 400
+       C 316 430.9 340.9 456 372 456
+       C 403.1 456 428 430.9 428 400
+       C 428 362 376 300 376 300
+       Z"
+    fill="#FFFFFF"
+    opacity="0.95"
+  />
+</svg>

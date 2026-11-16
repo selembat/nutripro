@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#FF5A2073</color>
+    <color name="primary_dark">#FF3D1550</color>
+    <color name="accent">#FF8B3FB0</color>
+
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="dark_bg">#FF1C1C1E</color>
+
+    <!-- Data field colors -->
+    <color name="datafield_bg">#FF000000</color>
+    <color name="datafield_text">#FFFFFFFF</color>
+    <color name="text_dim">#FF71717A</color>
+
+    <!-- Balance thresholds -->
+    <color name="balance_green">#FF22C55E</color>
+    <color name="balance_yellow_green">#FF16A34A</color>
+    <color name="balance_yellow">#FFEAB308</color>
+    <color name="balance_orange">#FFF97316</color>
+    <color name="balance_red">#FFEF4444</color>
+
+    <!-- Semantic -->
+    <color name="food_green">#FF22C55E</color>
+    <color name="water_blue">#FF3B82F6</color>
+
+    <!-- Alert colors -->
+    <color name="alert_eat">#FFD97706</color>
+    <color name="alert_drink">#FF2563EB</color>
+</resources>
