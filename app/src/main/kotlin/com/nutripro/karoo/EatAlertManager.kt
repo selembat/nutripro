@@ -42,6 +42,7 @@ class EatAlertManager(
         private const val WEATHER_MAX_AGE_MS = 20 * 60_000L
         private const val SENSOR_FRESH_WINDOW_MS = 5_000L
         private const val ASSUMED_BIKE_WEIGHT_KG = 9.0
+        private const val DUAL_SOURCE_THRESHOLD_GPH = 60.0
     }
 
     private var rideStateJob: Job? = null
@@ -70,7 +71,9 @@ class EatAlertManager(
     @Volatile private var routeDistanceM: Double = 0.0
     @Volatile private var hasRoute: Boolean = false
     @Volatile private var distanceToDestinationM: Double = 0.0
+    @Volatile private var timeToDestinationSec: Long = 0L
     private var lastNudgedClimbStartDistance: Double? = null
+    @Volatile private var durationNoticeFired: Boolean = false
 
     // Temperature fallback chain (spec 3.3): weather API -> BLE sensor (not yet implemented) -> manual.
     @Volatile private var hasLocation: Boolean = false
@@ -122,6 +125,7 @@ class EatAlertManager(
                         hasRoute = false
                         routeClimbs = emptyList()
                         lastNudgedClimbStartDistance = null
+                        durationNoticeFired = false
                         hasLocation = false
                         weatherTempC = null
                         weatherTempAtMs = null
@@ -171,6 +175,11 @@ class EatAlertManager(
                 karooSystem.streamDataFlow(DataType.Type.DISTANCE_TO_DESTINATION)
                     .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
                     .collect { distanceToDestinationM = it }
+            }
+            launch {
+                karooSystem.streamDataFlow(DataType.Type.TIME_TO_DESTINATION)
+                    .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.singleValue }
+                    .collect { timeToDestinationSec = it.toLong() }
             }
             launch {
                 karooSystem.streamDataFlow(DataType.Type.TEMPERATURE)
@@ -274,6 +283,20 @@ class EatAlertManager(
         }
     }
 
+    /**
+     * Best available ride-duration estimate for [DurationGate] (spec 3.1 extension): a
+     * loaded route's live elapsed+ETA, else a manually chosen ride plan, else elapsed time
+     * so far - which lets the carb target ramp up naturally the longer an unplanned ride runs.
+     */
+    private fun resolvePlanSec(elapsedSec: Long): Long {
+        val plannedMinutes = preferences.plannedRideMinutes
+        return when {
+            hasRoute -> elapsedSec + timeToDestinationSec
+            plannedMinutes > 0 -> plannedMinutes * 60L
+            else -> elapsedSec
+        }
+    }
+
     private fun stopSensorStreams() {
         sensorJob?.cancel()
         sensorJob = null
@@ -316,8 +339,10 @@ class EatAlertManager(
                 val dtSec = (now - lastTickMs) / 1000.0
                 lastTickMs = now
                 val elapsedSec = (now - recordingStartTimeMs) / 1000L
+                val planSec = resolvePlanSec(elapsedSec)
 
-                tracker.tickDebt(dtSec, resolveIntensityPercent(now), resolvePowerWatts(now), currentTempC())
+                tracker.tickDebt(dtSec, resolveIntensityPercent(now), resolvePowerWatts(now), currentTempC(), planSec)
+                checkDurationNotice()
                 onTick(elapsedSec)
             }
         }
@@ -353,6 +378,27 @@ class EatAlertManager(
         }
 
         checkPreClimbNudge(state.carbDebtGrams)
+    }
+
+    /** One-time heads-up (spec 3.1 extension): explains the first-hour gate when we have no
+     * better duration estimate than "wait and see", so the lack of early alerts isn't a mystery. */
+    private fun checkDurationNotice() {
+        if (durationNoticeFired) return
+        if (hasRoute || preferences.plannedRideMinutes > 0) return
+        durationNoticeFired = true
+        dispatchAlert(
+            idPrefix = "duration-notice",
+            icon = R.drawable.ic_food,
+            title = "Fueling alerts start after 1h",
+            detail = "No route or planned duration set - load a route or set a ride plan if you're riding longer.",
+            backgroundColor = R.color.alert_eat,
+            autoDismissMs = 8_000,
+            tones = listOf(
+                PlayBeepPattern.Tone(frequency = 900, durationMs = 150),
+                PlayBeepPattern.Tone(frequency = null, durationMs = 80),
+                PlayBeepPattern.Tone(frequency = 900, durationMs = 150),
+            ),
+        )
     }
 
     private fun checkPreClimbNudge(carbDebtGrams: Double) {
@@ -404,11 +450,22 @@ class EatAlertManager(
         val defaultTemplate = preferences.getDefaultTemplate()
         Timber.d("Eat alert: debt=%.0fg, recommend=%dg", carbDebtGrams, defaultTemplate.carbsGrams)
 
+        // Above ~60g/h a single sugar source (glucose/maltodextrin alone) saturates the gut's
+        // SGLT1 transporter - a 2:1 or 1:0.8 glucose:fructose blend is needed to actually
+        // absorb it without GI distress.
+        val carbTargetGph = tracker.stateFlow.value.carbTargetGph
+        val compositionNote = if (carbTargetGph > DUAL_SOURCE_THRESHOLD_GPH) {
+            " Dual-source required: 2:1 or 1:0.8 glucose:fructose."
+        } else {
+            ""
+        }
+        val eatDetail = "Recommended: ${defaultTemplate.carbsGrams}g carbs. Debt: ${carbDebtGrams.toInt()}g.$compositionNote"
+
         dispatchAlert(
             idPrefix = "eat-reminder",
             icon = R.drawable.ic_food,
             title = "Time to eat!",
-            detail = "Recommended: ${defaultTemplate.carbsGrams}g carbs. Debt: ${carbDebtGrams.toInt()}g",
+            detail = eatDetail,
             backgroundColor = R.color.alert_eat,
             autoDismissMs = 10_000,
             tones = listOf(
@@ -421,7 +478,7 @@ class EatAlertManager(
         karooSystem.dispatch(
             SystemNotification(
                 "eat-notification",
-                "Time to eat! Recommended: ${defaultTemplate.carbsGrams}g carbs. Debt: ${carbDebtGrams.toInt()}g",
+                "Time to eat! $eatDetail",
                 action = "Log ${defaultTemplate.name} ${defaultTemplate.carbsGrams}g",
                 actionIntent = "com.nutripro.QUICK_LOG",
             ),

@@ -69,14 +69,15 @@ class QuickLogActivity : ComponentActivity() {
         when (intent?.getStringExtra("mode")) {
             "quick-food" -> return logFood(preferences.getDefaultTemplate())
             "quick-water" -> return logWater(preferences.sipAmountMl.toInt())
+            "quick-sodium" -> return logSodium(preferences.sodiumDoseMg.toInt())
         }
 
         setContent {
             NutriProTheme {
-                if (intent?.getStringExtra("mode") == "water") {
-                    WaterLogScreen(onLog = ::logWater, onCancel = ::finish)
-                } else {
-                    FoodLogScreen(
+                when (intent?.getStringExtra("mode")) {
+                    "water" -> WaterLogScreen(onLog = ::logWater, onCancel = ::finish)
+                    "duration" -> RidePlanScreen(onPick = ::setPlannedMinutes, onCancel = ::finish)
+                    else -> FoodLogScreen(
                         templates = preferences.loadFoodTemplates(),
                         onLog = ::logFood,
                         onLogCustom = ::logCustom,
@@ -127,6 +128,19 @@ class QuickLogActivity : ComponentActivity() {
     private fun logWater(ml: Int) = withRunningTracker { tracker ->
         tracker.logWater(ml.toDouble())
         Toast.makeText(this, "Logged ${ml}ml water", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    private fun logSodium(mg: Int) = withRunningTracker { tracker ->
+        tracker.logSodium(mg.toDouble())
+        Toast.makeText(this, "Logged ${mg}mg sodium", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    private fun setPlannedMinutes(minutes: Int) {
+        preferences.plannedRideMinutes = minutes
+        val label = if (minutes >= 60) "${minutes / 60}h${if (minutes % 60 != 0) "${minutes % 60}m" else ""}" else "${minutes}m"
+        Toast.makeText(this, "Ride plan set to $label", Toast.LENGTH_SHORT).show()
         finish()
     }
 }
@@ -320,6 +334,48 @@ fun WaterLogScreen(onLog: (Int) -> Unit, onCancel: () -> Unit) {
                         Text(text = "$ml", fontSize = if (compact) 28.sp else 36.sp, fontWeight = FontWeight.Black, color = Water)
                         Text(text = " ml", fontSize = if (compact) 14.sp else 18.sp, fontWeight = FontWeight.Bold, color = Water.copy(alpha = 0.6f))
                     }
+                }
+            }
+        }
+
+        ActionButton(
+            label = "CANCEL",
+            backgroundColor = Surface,
+            textColor = OnSurfaceVariant,
+            height = if (compact) 48.dp else 56.dp,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            onClick = onCancel,
+        )
+    }
+}
+
+/** Preset ride-length buckets for the carb-debt duration gate (spec 3.1 extension). */
+@Composable
+fun RidePlanScreen(onPick: (Int) -> Unit, onCancel: () -> Unit) {
+    val compact = isCompactScreen()
+    val options = listOf(
+        "< 1 hour" to 45,
+        "1 - 2 hours" to 90,
+        "2 - 3 hours" to 150,
+        "3 - 4 hours" to 210,
+        "4+ hours" to 300,
+    )
+
+    Column(modifier = Modifier.fillMaxSize().background(Background)) {
+        ScreenHeader(title = "RIDE PLAN", barColor = Accent, contentColor = OnAccent, onBack = onCancel, compact = compact)
+
+        Column(
+            modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())
+                .padding(horizontal = 12.dp, vertical = if (compact) 8.dp else 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            options.forEach { (label, minutes) ->
+                Pill(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = if (compact) 14.dp else 18.dp),
+                    backgroundColor = Surface,
+                    onClick = { onPick(minutes) },
+                ) {
+                    Text(text = label, fontSize = if (compact) 18.sp else 22.sp, fontWeight = FontWeight.Black, color = Accent)
                 }
             }
         }

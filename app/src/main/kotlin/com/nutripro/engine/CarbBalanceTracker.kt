@@ -17,6 +17,7 @@ class CarbBalanceTracker(private val preferences: Preferences) {
         bottleCount = preferences.bottleCount,
         bottleVolumeMl = preferences.bottleVolumeMl.toDouble(),
     )
+    private val sodiumDebtEngine = SodiumDebtEngine()
 
     private val burnRateSamples = mutableListOf<Pair<Long, Double>>()
 
@@ -34,6 +35,7 @@ class CarbBalanceTracker(private val preferences: Preferences) {
             _stateFlow.value = saved
             carbDebtEngine.seed(saved.carbDebtGrams, elapsedSec = saved.elapsedRideSec)
             fluidDebtEngine.seed(saved.fluidDebtMl, saved.remainingBottleMl)
+            sodiumDebtEngine.seed(saved.sodiumDebtMg)
             Timber.d("Restored nutrition state: burned=%.1f eaten=%.1f", saved.totalBurned, saved.totalEaten)
         } else {
             _stateFlow.value = _stateFlow.value.copy(remainingBottleMl = fluidDebtEngine.remainingBottleMl)
@@ -43,13 +45,18 @@ class CarbBalanceTracker(private val preferences: Preferences) {
     /**
      * Advances the carb-debt and fluid-debt engines by [dtSec] seconds (spec 3.1/3.2).
      * [intensityPercent] is %FTP or %maxHR depending on what sensors are available.
+     * [planSec] is the best available ride-duration estimate, used to gate the carb
+     * target so short/unplanned rides don't get prescribed a high carb intake (see
+     * [DurationGate]).
      */
-    fun tickDebt(dtSec: Double, intensityPercent: Double, powerWatts: Double, tempC: Double) {
+    fun tickDebt(dtSec: Double, intensityPercent: Double, powerWatts: Double, tempC: Double, planSec: Long) {
         if (!isRiding) return
         val sweatMultiplier = preferences.sweatMultiplier.toDouble()
-        carbDebtEngine.tick(dtSec, intensityPercent)
+        carbDebtEngine.tick(dtSec, intensityPercent, planSec)
         fluidDebtEngine.tick(dtSec, powerWatts, tempC, sweatMultiplier)
         val sweatRateLph = SweatModel.sweatRateLph(powerWatts, tempC, sweatMultiplier)
+        sodiumDebtEngine.tick(dtSec, sweatRateLph, preferences.sweatSodiumMgPerL.toDouble())
+        val gatedCarbTargetGph = DurationGate.capGph(IntensityZone.getRecommendedIntakeGph(intensityPercent), planSec)
 
         val now = System.currentTimeMillis()
         val current = _stateFlow.value
@@ -58,10 +65,12 @@ class CarbBalanceTracker(private val preferences: Preferences) {
             fluidDebtMl = fluidDebtEngine.debtMl,
             remainingBottleMl = fluidDebtEngine.remainingBottleMl,
             sweatRateLph = sweatRateLph,
-            carbTargetGph = IntensityZone.getRecommendedIntakeGph(intensityPercent),
+            carbTargetGph = gatedCarbTargetGph,
             sweatLossMl = current.sweatLossMl + sweatRateLph * 1000.0 / 3600.0 * dtSec,
             currentTempC = tempC,
             elapsedRideSec = carbDebtEngine.elapsedSec,
+            sodiumDebtMg = sodiumDebtEngine.debtMg,
+            sodiumLossMg = current.sodiumLossMg + sweatRateLph * preferences.sweatSodiumMgPerL.toDouble() / 3600.0 * dtSec,
         )
         maybeSave(now)
     }
@@ -178,6 +187,33 @@ class CarbBalanceTracker(private val preferences: Preferences) {
         return true
     }
 
+    fun logSodium(mg: Double): Boolean {
+        val now = System.currentTimeMillis()
+        if (now - lastLogTimeMs < debounceMs) return false
+        lastLogTimeMs = now
+        sodiumDebtEngine.logSodium(mg)
+
+        val entry = IntakeEntry(
+            timestampMs = now,
+            carbsGrams = 0.0,
+            type = IntakeEntry.IntakeType.SODIUM,
+            templateName = "${mg.toInt()}mg sodium",
+            sodiumMg = mg,
+        )
+        val current = _stateFlow.value
+        _stateFlow.value = current.copy(
+            totalSodiumMg = current.totalSodiumMg + mg,
+            lastIntakeTimestampMs = now,
+            lastIntakeName = entry.templateName,
+            lastIntakeEmoji = "🧂",
+            intakeLog = current.intakeLog + entry,
+            sodiumDebtMg = sodiumDebtEngine.debtMg,
+        )
+        maybeSave(now)
+        Timber.d("Logged sodium: %.0fmg", mg)
+        return true
+    }
+
     fun undoLast(): Boolean {
         val current = _stateFlow.value
         val lastEntry = current.intakeLog.lastOrNull() ?: return false
@@ -215,6 +251,17 @@ class CarbBalanceTracker(private val preferences: Preferences) {
                     remainingBottleMl = fluidDebtEngine.remainingBottleMl,
                 )
             }
+            IntakeEntry.IntakeType.SODIUM -> {
+                sodiumDebtEngine.undoSodium(lastEntry.sodiumMg)
+                current.copy(
+                    totalSodiumMg = (current.totalSodiumMg - lastEntry.sodiumMg).coerceAtLeast(0.0),
+                    lastIntakeTimestampMs = prevEntry?.timestampMs ?: 0L,
+                    lastIntakeName = prevEntry?.templateName,
+                    lastIntakeEmoji = prevEntry?.templateEmoji,
+                    intakeLog = newLog,
+                    sodiumDebtMg = sodiumDebtEngine.debtMg,
+                )
+            }
         }
         Timber.d("Undid last entry: %s", lastEntry.templateName)
         return true
@@ -223,6 +270,7 @@ class CarbBalanceTracker(private val preferences: Preferences) {
     fun reset() {
         carbDebtEngine.reset()
         fluidDebtEngine.reset(preferences.bottleCount, preferences.bottleVolumeMl.toDouble())
+        sodiumDebtEngine.reset()
         _stateFlow.value = RideNutritionState(remainingBottleMl = fluidDebtEngine.remainingBottleMl)
         burnRateSamples.clear()
         lastLogTimeMs = 0L

@@ -20,6 +20,9 @@ data class RideNutritionState(
     val sweatLossMl: Double = 0.0,
     val currentTempC: Double = 0.0,
     val elapsedRideSec: Long = 0L,
+    val sodiumDebtMg: Double = 0.0,
+    val totalSodiumMg: Double = 0.0,
+    val sodiumLossMg: Double = 0.0,
 ) {
     val balance: Double get() = totalEaten - totalBurned
 }

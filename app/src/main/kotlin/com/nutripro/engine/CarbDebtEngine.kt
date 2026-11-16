@@ -15,11 +15,18 @@ class CarbDebtEngine {
     var elapsedSec: Long = 0L
         private set
 
-    /** Advances the engine by [dtSec] seconds at the given [intensityPercent] (%FTP or %maxHR). */
-    fun tick(dtSec: Double, intensityPercent: Double) {
+    /**
+     * Advances the engine by [dtSec] seconds at the given [intensityPercent] (%FTP or %maxHR).
+     * [planSec] is the best available ride-duration estimate (route ETA, a manually chosen
+     * plan, or elapsed time as a last resort) - short/unplanned rides don't need exogenous
+     * carbs at all, so [DurationGate] caps the intensity-based target until the ride is
+     * actually (or knowingly going to be) long enough to need them.
+     */
+    fun tick(dtSec: Double, intensityPercent: Double, planSec: Long) {
         require(dtSec >= 0.0)
         elapsedSec += dtSec.toLong()
-        val targetGph = IntensityZone.getRecommendedIntakeGph(intensityPercent)
+        val intensityTargetGph = IntensityZone.getRecommendedIntakeGph(intensityPercent)
+        val targetGph = DurationGate.capGph(intensityTargetGph, planSec)
         debtGrams += targetGph / 3600.0 * dtSec
     }
 

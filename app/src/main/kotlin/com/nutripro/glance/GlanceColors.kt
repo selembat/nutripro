@@ -44,6 +44,10 @@ object GlanceColors {
     fun timeSinceColor(minutesAgo: Int): Color =
         thresholdColor(minutesAgo.toDouble(), 20.0 to Food, 40.0 to Warning, fallback = Error)
 
+    /** Background urgency band for a debt field, by its debt relative to [dueAt] (e.g. one dose/serving). */
+    fun debtBgColor(debtAmount: Double, dueAt: Double): Color =
+        thresholdColor(debtAmount, dueAt * 0.5 to Background, dueAt to Warning, fallback = Error)
+
     private fun thresholdColor(value: Double, vararg steps: Pair<Double, Color>, fallback: Color): Color =
         steps.firstOrNull { (ceiling, _) -> value < ceiling }?.second ?: fallback
 }

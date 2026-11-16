@@ -128,6 +128,34 @@ fun StatRow(
     }
 }
 
+/**
+ * A segmented fill bar: Glance's Row weighting only supports equal-weight children (no
+ * arbitrary fractions), so the fraction is rendered as N/[segments] colored segments rather
+ * than one continuously-sized block - reads the same at a glance, just stepped.
+ */
+@Composable
+fun FillBar(
+    fraction: Float,
+    fillColor: Color,
+    trackColor: Color = GlanceColors.Frame,
+    segments: Int = 10,
+    height: Dp = 5.dp,
+) {
+    val filledCount = (fraction.coerceIn(0f, 1f) * segments).toInt().coerceIn(0, segments)
+    Row(modifier = GlanceModifier.fillMaxWidth().height(height)) {
+        repeat(segments) { index ->
+            Box(
+                modifier = GlanceModifier
+                    .defaultWeight()
+                    .fillMaxHeight()
+                    .padding(horizontal = 1.dp)
+                    .cornerRadius(2.dp)
+                    .background(if (index < filledCount) fillColor else trackColor),
+            ) {}
+        }
+    }
+}
+
 @Composable
 fun HorizontalRule(color: Color = GlanceColors.Divider, thickness: Dp = 1.dp) {
     Box(modifier = GlanceModifier.fillMaxWidth().height(thickness).background(color)) {}

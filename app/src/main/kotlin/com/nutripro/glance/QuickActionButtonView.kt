@@ -1,15 +1,18 @@
 package com.nutripro.glance
 
-import android.content.Context
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionStartActivity
+import androidx.compose.ui.unit.dp
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.height
 import com.nutripro.karoo.LayoutSize
 import com.nutripro.karoo.getLayoutSize
 import com.nutripro.ui.QuickLogActivity
@@ -18,24 +21,29 @@ import io.hammerhead.karooext.models.ViewConfig
 /**
  * A tappable data field that instantly logs a fixed intake when tapped - no menu, same
  * effect as a mapped hardware BonusAction, for riders who only have the Karoo screen
- * (spec 3.5).
+ * (spec 3.5). [backgroundColor] can be driven by the current debt level so the field's
+ * urgency is visible at a glance, not just its number. [fillFraction], when given, renders
+ * a segmented progress bar (e.g. debt relative to one serving/sip/dose) under the value.
  */
 @Composable
 fun QuickActionButtonView(
-    context: Context,
     label: String,
     valueText: String,
     unitText: String,
     accentColor: Color,
     quickLogMode: String,
     viewConfig: ViewConfig,
+    backgroundColor: Color = GlanceColors.Background,
+    fillFraction: Float? = null,
 ) {
     val layoutSize = getLayoutSize(viewConfig)
+    val context = LocalContext.current
     val intent = Intent(context, QuickLogActivity::class.java).apply {
         putExtra("mode", quickLogMode)
     }
 
     FieldSurface(
+        backgroundColor = backgroundColor,
         modifier = GlanceModifier.clickable(actionStartActivity(intent)),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -45,6 +53,10 @@ fun QuickActionButtonView(
                 color = accentColor,
                 fontSize = if (layoutSize == LayoutSize.LARGE) 26.sp else 18.sp,
             )
+            if (fillFraction != null && layoutSize != LayoutSize.SMALL) {
+                Spacer(modifier = GlanceModifier.height(4.dp))
+                FillBar(fraction = fillFraction, fillColor = accentColor)
+            }
         }
     }
 }

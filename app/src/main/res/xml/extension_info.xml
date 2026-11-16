@@ -46,26 +46,26 @@
         typeId="carb-debt"
         displayName="@string/dt_carb_debt"
         description="@string/dt_carb_debt_desc"
-        graphical="false"
+        graphical="true"
         icon="@drawable/ic_food" />
     <DataType
         typeId="fluid-debt"
         displayName="@string/dt_fluid_debt"
         description="@string/dt_fluid_debt_desc"
-        graphical="false"
+        graphical="true"
         icon="@drawable/ic_water" />
     <DataType
-        typeId="quick-food-log"
-        displayName="@string/dt_quick_food_log"
-        description="@string/dt_quick_food_log_desc"
+        typeId="sodium-debt"
+        displayName="@string/dt_sodium_debt"
+        description="@string/dt_sodium_debt_desc"
+        graphical="true"
+        icon="@drawable/ic_water" />
+    <DataType
+        typeId="ride-plan"
+        displayName="@string/dt_ride_plan"
+        description="@string/dt_ride_plan_desc"
         graphical="true"
         icon="@drawable/ic_food" />
-    <DataType
-        typeId="quick-water-log"
-        displayName="@string/dt_quick_water_log"
-        description="@string/dt_quick_water_log_desc"
-        graphical="true"
-        icon="@drawable/ic_water" />
 
     <BonusAction
         actionId="log-food"

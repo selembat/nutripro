@@ -10,9 +10,10 @@ data class IntakeEntry(
     val templateName: String? = null,
     val templateEmoji: String? = null,
     val waterMl: Double = 0.0,
+    val sodiumMg: Double = 0.0,
 ) {
     @Serializable
     enum class IntakeType {
-        FOOD, WATER
+        FOOD, WATER, SODIUM
     }
 }

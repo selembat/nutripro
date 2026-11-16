@@ -57,6 +57,12 @@ class Preferences(context: Context) {
     /** Personal sweat-model calibration multiplier (spec 3.7); 1.0 = uncalibrated. */
     var sweatMultiplier: Float by floatPref("sweat_multiplier", 1f)
 
+    /** Sweat sodium concentration (mg/L), used to estimate sodium loss from sweat rate. */
+    var sweatSodiumMgPerL: Float by floatPref("sweat_sodium_mg_per_l", 800f)
+
+    /** Amount logged by the one-tap sodium field, and the debt level it's considered "due" at (mg). */
+    var sodiumDoseMg: Float by floatPref("sodium_dose_mg", 500f)
+
     /** Pre/post-ride weigh-in for sweat-rate calibration (spec 3.7), kg; 0 = not entered. */
     var preRideWeightKg: Float by floatPref("pre_ride_weight_kg", 0f)
     var postRideWeightKg: Float by floatPref("post_ride_weight_kg", 0f)
@@ -70,6 +76,13 @@ class Preferences(context: Context) {
 
     /** Re-remind interval if nothing is logged after an alert (seconds). */
     var reRemindAfterSec: Long by longPref("re_remind_after_sec", 10 * 60L)
+
+    /**
+     * How long the rider plans to ride today (minutes); 0 means "unknown" - the carb-debt
+     * duration gate then falls back to elapsed time, or a loaded route's live ETA if one
+     * is available (spec: don't prescribe high carb targets on short rides/efforts).
+     */
+    var plannedRideMinutes: Int by intPref("planned_ride_minutes", 0)
 
     /** Testing: feed a fixed simulated power/HR into the engine instead of real sensor data. */
     var simulationModeEnabled: Boolean by boolPref("simulation_mode_enabled", false)
