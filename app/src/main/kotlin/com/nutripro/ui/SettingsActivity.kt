@@ -93,77 +93,37 @@ class SettingsActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Thin wrapper around one preference value: reads the stored value once into
+ * Compose state, and every write goes through both the mutable state (so the
+ * UI recomposes) and back out to [Preferences]. Each settings section below
+ * builds the handful of these it needs rather than threading loose `var`s
+ * and bespoke `onUpdate` lambdas through the composable tree.
+ */
+private class PrefField<T>(initial: T, private val persist: (T) -> Unit) {
+    var value: T by mutableStateOf(initial)
+        private set
+
+    fun set(newValue: T) {
+        value = newValue
+        persist(newValue)
+    }
+}
+
+@Composable
+private fun <T> rememberPrefField(initial: T, persist: (T) -> Unit): PrefField<T> =
+    remember { PrefField(initial, persist) }
+
 @Composable
 fun SettingsScreen(
     preferences: Preferences,
     onNavigateBack: () -> Unit,
 ) {
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val isCompact = screenHeight < 420.dp
+    val isCompact = LocalConfiguration.current.screenHeightDp.dp < 420.dp
 
-    var reminderStart by remember { mutableIntStateOf(preferences.reminderStartMinutes) }
-    var soundEnabled by remember { mutableStateOf(preferences.soundEnabled) }
-    var fitExport by remember { mutableStateOf(preferences.fitExportEnabled) }
-    var weatherEnabled by remember { mutableStateOf(preferences.weatherEnabled) }
-    var ftpOverride by remember { mutableIntStateOf(preferences.ftpOverride) }
-    var weightOverride by remember { mutableStateOf(preferences.weightOverride) }
+    Column(modifier = Modifier.fillMaxSize().background(Background)) {
+        SettingsHeader(onNavigateBack = onNavigateBack, isCompact = isCompact)
 
-    var servingGrams by remember { mutableIntStateOf(preferences.servingGrams.toInt()) }
-    var sipBlockMl by remember { mutableIntStateOf(preferences.sipBlockMl.toInt()) }
-    var sipAmountMl by remember { mutableIntStateOf(preferences.sipAmountMl.toInt()) }
-    var bottleCount by remember { mutableIntStateOf(preferences.bottleCount) }
-    var bottleVolumeMl by remember { mutableIntStateOf(preferences.bottleVolumeMl.toInt()) }
-    var manualTempC by remember { mutableIntStateOf(preferences.manualTempC.toInt()) }
-
-    var simulationModeEnabled by remember { mutableStateOf(preferences.simulationModeEnabled) }
-    var simulatedPowerWatts by remember { mutableIntStateOf(preferences.simulatedPowerWatts.toInt()) }
-    var simulatedHeartRateBpm by remember { mutableIntStateOf(preferences.simulatedHeartRateBpm) }
-
-    var preRideWeight by remember { mutableStateOf(preferences.preRideWeightKg) }
-    var postRideWeight by remember { mutableStateOf(preferences.postRideWeightKg) }
-    var sweatMultiplier by remember { mutableStateOf(preferences.sweatMultiplier) }
-    var calibrationMessage by remember { mutableStateOf<String?>(null) }
-
-    val templates = remember { mutableStateListOf(*preferences.loadFoodTemplates().toTypedArray()) }
-    var showAddTemplate by remember { mutableStateOf(false) }
-    var newTemplateName by remember { mutableStateOf("") }
-    var newTemplateCarbs by remember { mutableStateOf("") }
-    var newTemplateEmoji by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background),
-    ) {
-        // Header bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Accent)
-                .padding(horizontal = 4.dp, vertical = if (isCompact) 4.dp else 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(
-                onClick = onNavigateBack,
-                modifier = Modifier.size(32.dp),
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = OnAccent,
-                    modifier = Modifier.size(18.dp),
-                )
-            }
-            Text(
-                text = "NUTRIPRO SETTINGS",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Black,
-                color = OnAccent,
-                letterSpacing = 1.sp,
-            )
-        }
-
-        // Scrollable settings
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -171,379 +131,285 @@ fun SettingsScreen(
                 .padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 12.dp),
             verticalArrangement = Arrangement.spacedBy(if (isCompact) 12.dp else 16.dp),
         ) {
-            // === PROFILE ===
-            SettingsSection(title = "PROFILE") {
-                FtpRow(
-                    value = ftpOverride,
-                    onUpdate = {
-                        ftpOverride = it
-                        preferences.ftpOverride = it
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                WeightRow(
-                    value = weightOverride,
-                    onUpdate = {
-                        weightOverride = it
-                        preferences.weightOverride = it
-                    },
-                    isCompact = isCompact,
-                )
-            }
-
-            // === SWEAT CALIBRATION ===
-            SettingsSection(title = "SWEAT CALIBRATION") {
-                WeighInRow(
-                    label = "Pre-ride weight",
-                    value = preRideWeight,
-                    onUpdate = {
-                        preRideWeight = it
-                        preferences.preRideWeightKg = it
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                WeighInRow(
-                    label = "Post-ride weight",
-                    value = postRideWeight,
-                    onUpdate = {
-                        postRideWeight = it
-                        preferences.postRideWeightKg = it
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                SettingsRow(
-                    label = "Current multiplier",
-                    trailingText = "%.2f×".format(sweatMultiplier),
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CalibrateRow(
-                    enabled = preRideWeight > 0f && postRideWeight > 0f && preferences.lastRideSweatLossMl > 0f,
-                    message = calibrationMessage,
-                    isCompact = isCompact,
-                    onCalibrate = {
-                        val actualMl = SweatCalibrator.computeActualSweatLossMl(
-                            preWeightKg = preRideWeight.toDouble(),
-                            postWeightKg = postRideWeight.toDouble(),
-                            fluidDrunkMl = preferences.lastRideFluidDrunkMl.toDouble(),
-                        )
-                        val updated = SweatCalibrator.updateMultiplier(
-                            currentMultiplier = preferences.sweatMultiplier.toDouble(),
-                            modeledSweatLossMl = preferences.lastRideSweatLossMl.toDouble(),
-                            actualSweatLossMl = actualMl,
-                        )
-                        preferences.sweatMultiplier = updated.toFloat()
-                        sweatMultiplier = updated.toFloat()
-                        preRideWeight = 0f
-                        postRideWeight = 0f
-                        preferences.preRideWeightKg = 0f
-                        preferences.postRideWeightKg = 0f
-                        calibrationMessage = "Updated to %.2f× (measured %.0fml lost)".format(updated, actualMl)
-                    },
-                )
-            }
-
-            // === FOOD TEMPLATES ===
-            SettingsSection(title = "FOOD TEMPLATES") {
-                templates.forEachIndexed { index, template ->
-                    if (index > 0) CardDivider()
-                    TemplateRow(
-                        template = template,
-                        onSetDefault = {
-                            val updated = templates.mapIndexed { i, t ->
-                                t.copy(isDefault = i == index)
-                            }
-                            templates.clear()
-                            templates.addAll(updated)
-                            preferences.saveFoodTemplates(updated)
-                        },
-                        onDelete = {
-                            templates.removeAt(index)
-                            preferences.saveFoodTemplates(templates.toList())
-                        },
-                        isCompact = isCompact,
-                    )
-                }
-
-                if (templates.isNotEmpty()) CardDivider()
-
-                if (showAddTemplate) {
-                    AddTemplateRow(
-                        name = newTemplateName,
-                        carbs = newTemplateCarbs,
-                        emoji = newTemplateEmoji,
-                        onNameChange = { newTemplateName = it },
-                        onCarbsChange = { newTemplateCarbs = it.filter { c -> c.isDigit() } },
-                        onEmojiChange = { newTemplateEmoji = it },
-                        onAdd = {
-                            val carbs = newTemplateCarbs.toIntOrNull()
-                            if (newTemplateName.isNotBlank() && carbs != null && carbs > 0) {
-                                val newTemplate = FoodTemplate(
-                                    name = newTemplateName.trim(),
-                                    carbsGrams = carbs,
-                                    emoji = newTemplateEmoji.trim(),
-                                )
-                                templates.add(newTemplate)
-                                preferences.saveFoodTemplates(templates.toList())
-                                newTemplateName = ""
-                                newTemplateCarbs = ""
-                                newTemplateEmoji = ""
-                                showAddTemplate = false
-                            }
-                        },
-                        onCancel = {
-                            showAddTemplate = false
-                            newTemplateName = ""
-                            newTemplateCarbs = ""
-                            newTemplateEmoji = ""
-                        },
-                        isCompact = isCompact,
-                    )
-                } else {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Food.copy(alpha = 0.1f))
-                            .clickable { showAddTemplate = true }
-                            .padding(horizontal = 12.dp, vertical = if (isCompact) 10.dp else 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = null,
-                            tint = Food,
-                            modifier = Modifier.size(14.dp),
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Add Template",
-                            fontSize = if (isCompact) 11.sp else 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Food,
-                        )
-                    }
-                }
-            }
-
-            // === FUELING ===
-            SettingsSection(title = "FUELING") {
-                CompactValueRow(
-                    label = "Serving size",
-                    value = servingGrams,
-                    unit = "g",
-                    color = Food,
-                    onIncrease = {
-                        servingGrams = (servingGrams + 5).coerceAtMost(60)
-                        preferences.servingGrams = servingGrams.toFloat()
-                    },
-                    onDecrease = {
-                        servingGrams = (servingGrams - 5).coerceAtLeast(10)
-                        preferences.servingGrams = servingGrams.toFloat()
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = "Sip size",
-                    value = sipBlockMl,
-                    unit = "ml",
-                    color = Water,
-                    onIncrease = {
-                        sipBlockMl = (sipBlockMl + 25).coerceAtMost(300)
-                        preferences.sipBlockMl = sipBlockMl.toFloat()
-                    },
-                    onDecrease = {
-                        sipBlockMl = (sipBlockMl - 25).coerceAtLeast(50)
-                        preferences.sipBlockMl = sipBlockMl.toFloat()
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = "Quick Sip amount",
-                    value = sipAmountMl,
-                    unit = "ml",
-                    color = Water,
-                    onIncrease = {
-                        sipAmountMl = (sipAmountMl + 25).coerceAtMost(500)
-                        preferences.sipAmountMl = sipAmountMl.toFloat()
-                    },
-                    onDecrease = {
-                        sipAmountMl = (sipAmountMl - 25).coerceAtLeast(25)
-                        preferences.sipAmountMl = sipAmountMl.toFloat()
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = "Bottle count",
-                    value = bottleCount,
-                    unit = "x",
-                    color = Water,
-                    onIncrease = {
-                        bottleCount = (bottleCount + 1).coerceAtMost(4)
-                        preferences.bottleCount = bottleCount
-                    },
-                    onDecrease = {
-                        bottleCount = (bottleCount - 1).coerceAtLeast(1)
-                        preferences.bottleCount = bottleCount
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = "Bottle size",
-                    value = bottleVolumeMl,
-                    unit = "ml",
-                    color = Water,
-                    onIncrease = {
-                        bottleVolumeMl = (bottleVolumeMl + 250).coerceAtMost(1500)
-                        preferences.bottleVolumeMl = bottleVolumeMl.toFloat()
-                    },
-                    onDecrease = {
-                        bottleVolumeMl = (bottleVolumeMl - 250).coerceAtLeast(250)
-                        preferences.bottleVolumeMl = bottleVolumeMl.toFloat()
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = "First alert after",
-                    value = reminderStart,
-                    unit = "min",
-                    color = OnSurfaceVariant,
-                    onIncrease = {
-                        reminderStart = (reminderStart + 5).coerceAtMost(60)
-                        preferences.reminderStartMinutes = reminderStart
-                    },
-                    onDecrease = {
-                        reminderStart = (reminderStart - 5).coerceAtLeast(10)
-                        preferences.reminderStartMinutes = reminderStart
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                ToggleRow(
-                    label = "Weather temperature",
-                    checked = weatherEnabled,
-                    activeColor = Water,
-                    onToggle = {
-                        weatherEnabled = it
-                        preferences.weatherEnabled = it
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = if (weatherEnabled) "Manual temp (fallback)" else "Manual temperature",
-                    value = manualTempC,
-                    unit = "°C",
-                    color = OnSurfaceVariant,
-                    onIncrease = {
-                        manualTempC = (manualTempC + 1).coerceAtMost(45)
-                        preferences.manualTempC = manualTempC.toFloat()
-                    },
-                    onDecrease = {
-                        manualTempC = (manualTempC - 1).coerceAtLeast(-10)
-                        preferences.manualTempC = manualTempC.toFloat()
-                    },
-                    isCompact = isCompact,
-                )
-            }
-
-            // === ALERTS & DATA ===
-            SettingsSection(title = "OPTIONS") {
-                ToggleRow(
-                    label = "Sound alerts",
-                    checked = soundEnabled,
-                    activeColor = Accent,
-                    onToggle = {
-                        soundEnabled = it
-                        preferences.soundEnabled = it
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                ToggleRow(
-                    label = "FIT export",
-                    checked = fitExport,
-                    activeColor = Accent,
-                    onToggle = {
-                        fitExport = it
-                        preferences.fitExportEnabled = it
-                    },
-                    isCompact = isCompact,
-                )
-            }
-
-            // === TESTING ===
-            SettingsSection(title = "TESTING") {
-                ToggleRow(
-                    label = "Simulation mode",
-                    checked = simulationModeEnabled,
-                    activeColor = Error,
-                    onToggle = {
-                        simulationModeEnabled = it
-                        preferences.simulationModeEnabled = it
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = "Simulated power",
-                    value = simulatedPowerWatts,
-                    unit = "W",
-                    color = Accent,
-                    onIncrease = {
-                        simulatedPowerWatts = (simulatedPowerWatts + 10).coerceAtMost(500)
-                        preferences.simulatedPowerWatts = simulatedPowerWatts.toFloat()
-                    },
-                    onDecrease = {
-                        simulatedPowerWatts = (simulatedPowerWatts - 10).coerceAtLeast(0)
-                        preferences.simulatedPowerWatts = simulatedPowerWatts.toFloat()
-                    },
-                    isCompact = isCompact,
-                )
-                CardDivider()
-                CompactValueRow(
-                    label = "Simulated heart rate",
-                    value = simulatedHeartRateBpm,
-                    unit = "bpm",
-                    color = Accent,
-                    onIncrease = {
-                        simulatedHeartRateBpm = (simulatedHeartRateBpm + 5).coerceAtMost(220)
-                        preferences.simulatedHeartRateBpm = simulatedHeartRateBpm
-                    },
-                    onDecrease = {
-                        simulatedHeartRateBpm = (simulatedHeartRateBpm - 5).coerceAtLeast(0)
-                        preferences.simulatedHeartRateBpm = simulatedHeartRateBpm
-                    },
-                    isCompact = isCompact,
-                )
-                if (simulationModeEnabled) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 10.dp),
-                    ) {
-                        Text(
-                            text = "Using simulated power/HR instead of real sensors — turn off before a real ride.",
-                            fontSize = if (isCompact) 9.sp else 10.sp,
-                            color = Error,
-                        )
-                    }
-                }
-            }
-
-            // === ABOUT ===
-            AboutSection(isCompact = isCompact)
-
+            ProfileSection(preferences, isCompact)
+            SweatCalibrationSection(preferences, isCompact)
+            FoodTemplatesSection(preferences, isCompact)
+            FuelingSection(preferences, isCompact)
+            OptionsSection(preferences, isCompact)
+            TestingSection(preferences, isCompact)
+            AboutSection(isCompact)
             Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun SettingsHeader(onNavigateBack: () -> Unit, isCompact: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Accent)
+            .padding(horizontal = 4.dp, vertical = if (isCompact) 4.dp else 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconButton(onClick = onNavigateBack, modifier = Modifier.size(32.dp)) {
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = OnAccent,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        Text(
+            text = "NUTRIPRO SETTINGS",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Black,
+            color = OnAccent,
+            letterSpacing = 1.sp,
+        )
+    }
+}
+
+@Composable
+private fun ProfileSection(preferences: Preferences, isCompact: Boolean) {
+    val ftp = rememberPrefField(preferences.ftpOverride) { preferences.ftpOverride = it }
+    val weight = rememberPrefField(preferences.weightOverride) { preferences.weightOverride = it }
+
+    SettingsSection(title = "PROFILE") {
+        FtpRow(value = ftp.value, onUpdate = ftp::set, isCompact = isCompact)
+        CardDivider()
+        WeightRow(value = weight.value, onUpdate = weight::set, isCompact = isCompact)
+    }
+}
+
+@Composable
+private fun SweatCalibrationSection(preferences: Preferences, isCompact: Boolean) {
+    val preRideWeight = rememberPrefField(preferences.preRideWeightKg) { preferences.preRideWeightKg = it }
+    val postRideWeight = rememberPrefField(preferences.postRideWeightKg) { preferences.postRideWeightKg = it }
+    var sweatMultiplier by remember { mutableStateOf(preferences.sweatMultiplier) }
+    var calibrationMessage by remember { mutableStateOf<String?>(null) }
+
+    val readyToCalibrate = preRideWeight.value > 0f &&
+        postRideWeight.value > 0f &&
+        preferences.lastRideSweatLossMl > 0f
+
+    SettingsSection(title = "SWEAT CALIBRATION") {
+        WeighInRow(label = "Pre-ride weight", value = preRideWeight.value, onUpdate = preRideWeight::set, isCompact = isCompact)
+        CardDivider()
+        WeighInRow(label = "Post-ride weight", value = postRideWeight.value, onUpdate = postRideWeight::set, isCompact = isCompact)
+        CardDivider()
+        SettingsRow(label = "Current multiplier", trailingText = "%.2f×".format(sweatMultiplier), isCompact = isCompact)
+        CardDivider()
+        CalibrateRow(
+            enabled = readyToCalibrate,
+            message = calibrationMessage,
+            isCompact = isCompact,
+            onCalibrate = {
+                val actualLossMl = SweatCalibrator.computeActualSweatLossMl(
+                    preWeightKg = preRideWeight.value.toDouble(),
+                    postWeightKg = postRideWeight.value.toDouble(),
+                    fluidDrunkMl = preferences.lastRideFluidDrunkMl.toDouble(),
+                )
+                val newMultiplier = SweatCalibrator.updateMultiplier(
+                    currentMultiplier = preferences.sweatMultiplier.toDouble(),
+                    modeledSweatLossMl = preferences.lastRideSweatLossMl.toDouble(),
+                    actualSweatLossMl = actualLossMl,
+                ).toFloat()
+
+                preferences.sweatMultiplier = newMultiplier
+                sweatMultiplier = newMultiplier
+                preRideWeight.set(0f)
+                postRideWeight.set(0f)
+                calibrationMessage = "Updated to %.2f× (measured %.0fml lost)".format(newMultiplier, actualLossMl)
+            },
+        )
+    }
+}
+
+@Composable
+private fun FoodTemplatesSection(preferences: Preferences, isCompact: Boolean) {
+    val templates = remember { mutableStateListOf(*preferences.loadFoodTemplates().toTypedArray()) }
+    var isAdding by remember { mutableStateOf(false) }
+    var draftName by remember { mutableStateOf("") }
+    var draftCarbs by remember { mutableStateOf("") }
+    var draftEmoji by remember { mutableStateOf("") }
+
+    fun persist() = preferences.saveFoodTemplates(templates.toList())
+    fun resetDraft() {
+        isAdding = false
+        draftName = ""
+        draftCarbs = ""
+        draftEmoji = ""
+    }
+
+    SettingsSection(title = "FOOD TEMPLATES") {
+        templates.forEachIndexed { index, template ->
+            if (index > 0) CardDivider()
+            TemplateRow(
+                template = template,
+                onSetDefault = {
+                    templates.indices.forEach { i -> templates[i] = templates[i].copy(isDefault = i == index) }
+                    persist()
+                },
+                onDelete = {
+                    templates.removeAt(index)
+                    persist()
+                },
+                isCompact = isCompact,
+            )
+        }
+
+        if (templates.isNotEmpty()) CardDivider()
+
+        if (isAdding) {
+            AddTemplateRow(
+                name = draftName,
+                carbs = draftCarbs,
+                emoji = draftEmoji,
+                onNameChange = { draftName = it },
+                onCarbsChange = { draftCarbs = it.filter(Char::isDigit) },
+                onEmojiChange = { draftEmoji = it },
+                onAdd = {
+                    val carbsGrams = draftCarbs.toIntOrNull()
+                    if (draftName.isNotBlank() && carbsGrams != null && carbsGrams > 0) {
+                        templates.add(FoodTemplate(name = draftName.trim(), carbsGrams = carbsGrams, emoji = draftEmoji.trim()))
+                        persist()
+                        resetDraft()
+                    }
+                },
+                onCancel = ::resetDraft,
+                isCompact = isCompact,
+            )
+        } else {
+            AddTemplateButton(onClick = { isAdding = true }, isCompact = isCompact)
+        }
+    }
+}
+
+@Composable
+private fun AddTemplateButton(onClick: () -> Unit, isCompact: Boolean) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(6.dp))
+            .background(Food.copy(alpha = 0.1f))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = if (isCompact) 10.dp else 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Icon(Icons.Default.Add, contentDescription = null, tint = Food, modifier = Modifier.size(14.dp))
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(text = "Add Template", fontSize = if (isCompact) 11.sp else 12.sp, fontWeight = FontWeight.Bold, color = Food)
+    }
+}
+
+private data class SteppedSetting(
+    val label: String,
+    val value: Int,
+    val unit: String,
+    val color: Color,
+    val step: Int,
+    val range: IntRange,
+    val persist: (Int) -> Unit,
+)
+
+@Composable
+private fun FuelingSection(preferences: Preferences, isCompact: Boolean) {
+    val servingGrams = rememberPrefField(preferences.servingGrams.toInt()) { preferences.servingGrams = it.toFloat() }
+    val sipBlockMl = rememberPrefField(preferences.sipBlockMl.toInt()) { preferences.sipBlockMl = it.toFloat() }
+    val sipAmountMl = rememberPrefField(preferences.sipAmountMl.toInt()) { preferences.sipAmountMl = it.toFloat() }
+    val bottleCount = rememberPrefField(preferences.bottleCount) { preferences.bottleCount = it }
+    val bottleVolumeMl = rememberPrefField(preferences.bottleVolumeMl.toInt()) { preferences.bottleVolumeMl = it.toFloat() }
+    val reminderStart = rememberPrefField(preferences.reminderStartMinutes) { preferences.reminderStartMinutes = it }
+    val manualTempC = rememberPrefField(preferences.manualTempC.toInt()) { preferences.manualTempC = it.toFloat() }
+    val weatherEnabled = rememberPrefField(preferences.weatherEnabled) { preferences.weatherEnabled = it }
+
+    val steppedSettings = listOf(
+        SteppedSetting("Serving size", servingGrams.value, "g", Food, 5, 10..60, servingGrams::set),
+        SteppedSetting("Sip size", sipBlockMl.value, "ml", Water, 25, 50..300, sipBlockMl::set),
+        SteppedSetting("Quick Sip amount", sipAmountMl.value, "ml", Water, 25, 25..500, sipAmountMl::set),
+        SteppedSetting("Bottle count", bottleCount.value, "x", Water, 1, 1..4, bottleCount::set),
+        SteppedSetting("Bottle size", bottleVolumeMl.value, "ml", Water, 250, 250..1500, bottleVolumeMl::set),
+        SteppedSetting("First alert after", reminderStart.value, "min", OnSurfaceVariant, 5, 10..60, reminderStart::set),
+    )
+
+    SettingsSection(title = "FUELING") {
+        steppedSettings.forEachIndexed { index, setting ->
+            if (index > 0) CardDivider()
+            CompactValueRow(
+                label = setting.label,
+                value = setting.value,
+                unit = setting.unit,
+                color = setting.color,
+                onIncrease = { setting.persist((setting.value + setting.step).coerceAtMost(setting.range.last)) },
+                onDecrease = { setting.persist((setting.value - setting.step).coerceAtLeast(setting.range.first)) },
+                isCompact = isCompact,
+            )
+        }
+        CardDivider()
+        ToggleRow(label = "Weather temperature", checked = weatherEnabled.value, activeColor = Water, onToggle = weatherEnabled::set, isCompact = isCompact)
+        CardDivider()
+        CompactValueRow(
+            label = if (weatherEnabled.value) "Manual temp (fallback)" else "Manual temperature",
+            value = manualTempC.value,
+            unit = "°C",
+            color = OnSurfaceVariant,
+            onIncrease = { manualTempC.set((manualTempC.value + 1).coerceAtMost(45)) },
+            onDecrease = { manualTempC.set((manualTempC.value - 1).coerceAtLeast(-10)) },
+            isCompact = isCompact,
+        )
+    }
+}
+
+@Composable
+private fun OptionsSection(preferences: Preferences, isCompact: Boolean) {
+    val soundEnabled = rememberPrefField(preferences.soundEnabled) { preferences.soundEnabled = it }
+    val fitExport = rememberPrefField(preferences.fitExportEnabled) { preferences.fitExportEnabled = it }
+
+    SettingsSection(title = "OPTIONS") {
+        ToggleRow(label = "Sound alerts", checked = soundEnabled.value, activeColor = Accent, onToggle = soundEnabled::set, isCompact = isCompact)
+        CardDivider()
+        ToggleRow(label = "FIT export", checked = fitExport.value, activeColor = Accent, onToggle = fitExport::set, isCompact = isCompact)
+    }
+}
+
+@Composable
+private fun TestingSection(preferences: Preferences, isCompact: Boolean) {
+    val simulationEnabled = rememberPrefField(preferences.simulationModeEnabled) { preferences.simulationModeEnabled = it }
+    val simulatedPower = rememberPrefField(preferences.simulatedPowerWatts.toInt()) { preferences.simulatedPowerWatts = it.toFloat() }
+    val simulatedHeartRate = rememberPrefField(preferences.simulatedHeartRateBpm) { preferences.simulatedHeartRateBpm = it }
+
+    SettingsSection(title = "TESTING") {
+        ToggleRow(label = "Simulation mode", checked = simulationEnabled.value, activeColor = Error, onToggle = simulationEnabled::set, isCompact = isCompact)
+        CardDivider()
+        CompactValueRow(
+            label = "Simulated power",
+            value = simulatedPower.value,
+            unit = "W",
+            color = Accent,
+            onIncrease = { simulatedPower.set((simulatedPower.value + 10).coerceAtMost(500)) },
+            onDecrease = { simulatedPower.set((simulatedPower.value - 10).coerceAtLeast(0)) },
+            isCompact = isCompact,
+        )
+        CardDivider()
+        CompactValueRow(
+            label = "Simulated heart rate",
+            value = simulatedHeartRate.value,
+            unit = "bpm",
+            color = Accent,
+            onIncrease = { simulatedHeartRate.set((simulatedHeartRate.value + 5).coerceAtMost(220)) },
+            onDecrease = { simulatedHeartRate.set((simulatedHeartRate.value - 5).coerceAtLeast(0)) },
+            isCompact = isCompact,
+        )
+        if (simulationEnabled.value) {
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 10.dp)) {
+                Text(
+                    text = "Using simulated power/HR instead of real sensors — turn off before a real ride.",
+                    fontSize = if (isCompact) 9.sp else 10.sp,
+                    color = Error,
+                )
+            }
         }
     }
 }
