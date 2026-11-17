@@ -4,9 +4,11 @@ import com.nutripro.R
 import com.nutripro.engine.AlertChannel
 import com.nutripro.engine.CarbBalanceTracker
 import com.nutripro.engine.PreClimbNudge
+import com.nutripro.engine.PreIntervalNudge
 import com.nutripro.engine.TemperatureFallback
 import com.nutripro.engine.UnsafeConditionDetector
 import com.nutripro.engine.VirtualPowerEstimator
+import com.nutripro.model.RideMode
 import com.nutripro.util.Preferences
 import io.hammerhead.karooext.KarooSystemService
 import io.hammerhead.karooext.models.DataType
@@ -43,6 +45,9 @@ class EatAlertManager(
         private const val SENSOR_FRESH_WINDOW_MS = 5_000L
         private const val ASSUMED_BIKE_WEIGHT_KG = 9.0
         private const val DUAL_SOURCE_THRESHOLD_GPH = 60.0
+        private const val RACE_DUAL_SOURCE_THRESHOLD_GPH = 50.0
+        private const val RACE_MAX_HOLD_SEC = 2 * 60L
+        private const val RACE_RE_REMIND_SEC = 6 * 60L
     }
 
     private var rideStateJob: Job? = null
@@ -64,6 +69,7 @@ class EatAlertManager(
     @Volatile private var maxHrBpm: Int = 0
     @Volatile private var totalWeightKg: Double = 0.0
     @Volatile private var bottleWarningFired: Boolean = false
+    @Volatile private var bottlesEmptyFired: Boolean = false
 
     // Pre-climb nudge (spec 3.4) — only available while navigating a loaded route, since that's
     // the only mode exposing a fixed route distance to measure climb positions against.
@@ -74,6 +80,24 @@ class EatAlertManager(
     @Volatile private var timeToDestinationSec: Long = 0L
     private var lastNudgedClimbStartDistance: Double? = null
     @Volatile private var durationNoticeFired: Boolean = false
+
+    // Ride mode (spec 3.1 extension): confirmed only once the rider has explicitly picked a
+    // mode this ride (manually, or by accepting the workout-detected suggestion) - a sticky
+    // Preferences default is NOT by itself "confirmed", see DurationGate's modeConfirmed param.
+    @Volatile private var rideModeConfirmedThisRide: Boolean = false
+    @Volatile private var racePreloadFired: Boolean = false
+
+    // Pre-interval nudge (spec 3.1 extension, Workout mode) - only available while a
+    // structured workout is loaded, same current-step-only limitation as the Karoo SDK.
+    @Volatile private var zoneRanges: List<IntRange> = emptyList()
+    @Volatile private var workoutActive: Boolean = false
+    @Volatile private var workoutTargetValue: Double? = null
+    @Volatile private var workoutTimeToStepFinishSec: Long? = null
+    @Volatile private var workoutCurrentStep: Int = 0
+    @Volatile private var workoutTotalSteps: Int = 0
+    private var lastNudgedWorkoutStep: Int? = null
+    private var workoutSuggestionFired: Boolean = false
+    private val preIntervalNudge = PreIntervalNudge()
 
     // Temperature fallback chain (spec 3.3): weather API -> BLE sensor (not yet implemented) -> manual.
     @Volatile private var hasLocation: Boolean = false
@@ -88,6 +112,7 @@ class EatAlertManager(
     private val preClimbNudge = PreClimbNudge()
     private val carbChannel = AlertChannel()
     private val fluidChannel = AlertChannel()
+    private val sodiumChannel = AlertChannel()
     private var prevCarbDebtGrams = 0.0
     private var prevFluidDebtMl = 0.0
 
@@ -107,6 +132,7 @@ class EatAlertManager(
                         }
                         startSensorStreams(scope)
                         startTick(scope)
+                        checkRacePreload()
                     }
                     is RideState.Paused -> {
                         if (pausedAtMs == 0L) {
@@ -120,20 +146,46 @@ class EatAlertManager(
                         recordingStartTimeMs = 0L
                         pausedAtMs = 0L
                         bottleWarningFired = false
+                        bottlesEmptyFired = false
                         carbChannel.reset()
                         fluidChannel.reset()
+                        sodiumChannel.reset()
                         hasRoute = false
                         routeClimbs = emptyList()
                         lastNudgedClimbStartDistance = null
                         durationNoticeFired = false
+                        preferences.plannedRideMinutes = 0
                         hasLocation = false
                         weatherTempC = null
                         weatherTempAtMs = null
                         deviceSensorTempC = null
+                        rideModeConfirmedThisRide = false
+                        racePreloadFired = false
+                        workoutActive = false
+                        workoutTargetValue = null
+                        workoutTimeToStepFinishSec = null
+                        workoutCurrentStep = 0
+                        workoutTotalSteps = 0
+                        lastNudgedWorkoutStep = null
+                        workoutSuggestionFired = false
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Rider explicitly picked (or accepted a suggestion for) a ride mode this ride (spec 3.1
+     * extension) - sticky in [Preferences] for next ride's default, and marks the duration
+     * gate as overridden for the rest of *this* ride via [rideModeConfirmedThisRide].
+     */
+    fun confirmRideMode(mode: String) {
+        preferences.rideMode = mode
+        rideModeConfirmedThisRide = true
+        Timber.d("Ride mode confirmed: %s", mode)
+        // Covers picking Race moments into the ride, not just when it was already the sticky
+        // default at RideState.Recording - checkRacePreload() is itself idempotent.
+        checkRacePreload()
     }
 
     private fun startSensorStreams(scope: CoroutineScope) {
@@ -147,6 +199,14 @@ class EatAlertManager(
             maxHrBpm = profile.maxHr
             val riderWeightKg = if (preferences.weightOverride > 0f) preferences.weightOverride.toDouble() else profile.weight.toDouble()
             totalWeightKg = riderWeightKg + ASSUMED_BIKE_WEIGHT_KG
+
+            // Rider's own configured zones (spec 3.1 extension), whichever target type we'll
+            // actually have live data for - same hasFtp/hasMaxHr split as the intensity source.
+            zoneRanges = when {
+                hasFtp -> profile.powerZones.map { it.min..it.max }
+                hasMaxHr -> profile.heartRateZones.map { it.min..it.max }
+                else -> emptyList()
+            }
 
             launch {
                 karooSystem.streamDataFlow(DataType.Type.POWER)
@@ -231,6 +291,32 @@ class EatAlertManager(
                             hrPercentLive = it
                             lastHrPercentAtMs = System.currentTimeMillis()
                         }
+                }
+            }
+            if (hasFtp || hasMaxHr) {
+                launch {
+                    karooSystem.streamDataFlow(DataType.Type.WORKOUT_REMAINING_INTERVAL_DURATION)
+                        .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
+                        .collect { values ->
+                            // WORKOUT_STATE's exact value scheme isn't documented by the SDK;
+                            // treat present-and-positive as "a workout is active" and absent as not.
+                            workoutActive = (values[DataType.Field.WORKOUT_STATE] ?: 0.0) > 0.0
+                            workoutTimeToStepFinishSec = values[DataType.Field.WORKOUT_TIME_TO_STEP_FINISH]?.toLong()
+                        }
+                }
+                launch {
+                    karooSystem.streamDataFlow(DataType.Type.WORKOUT_INTERVAL_COUNT)
+                        .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
+                        .collect { values ->
+                            workoutCurrentStep = values[DataType.Field.WORKOUT_CURRENT_STEP]?.toInt() ?: 0
+                            workoutTotalSteps = values[DataType.Field.WORKOUT_STEP_COUNT]?.toInt() ?: 0
+                        }
+                }
+                launch {
+                    val workoutTargetType = if (hasFtp) DataType.Type.WORKOUT_POWER_TARGET else DataType.Type.WORKOUT_HEART_RATE_TARGET
+                    karooSystem.streamDataFlow(workoutTargetType)
+                        .mapNotNull { (it as? StreamState.Streaming)?.dataPoint?.values }
+                        .collect { values -> workoutTargetValue = values[DataType.Field.WORKOUT_TARGET_VALUE] }
                 }
             }
         }
@@ -341,8 +427,17 @@ class EatAlertManager(
                 val elapsedSec = (now - recordingStartTimeMs) / 1000L
                 val planSec = resolvePlanSec(elapsedSec)
 
-                tracker.tickDebt(dtSec, resolveIntensityPercent(now), resolvePowerWatts(now), currentTempC(), planSec)
+                tracker.tickDebt(
+                    dtSec,
+                    resolveIntensityPercent(now),
+                    resolvePowerWatts(now),
+                    currentTempC(),
+                    planSec,
+                    modeConfirmed = rideModeConfirmedThisRide,
+                    isRaceMode = preferences.rideMode == RideMode.RACE,
+                )
                 checkDurationNotice()
+                checkWorkoutModeSuggestion()
                 onTick(elapsedSec)
             }
         }
@@ -361,23 +456,105 @@ class EatAlertManager(
         prevFluidDebtMl = state.fluidDebtMl
 
         val isUnsafe = unsafeDetector.isUnsafe(power30sWatts, ftpWatts, speedMps, gradePercent)
-        val maxHoldSec = preferences.alertHoldMaxSec
-        val reRemindAfterSec = preferences.reRemindAfterSec
+        val isRaceMode = preferences.rideMode == RideMode.RACE
+        // Race mode only ever tightens the rider's own hold/re-remind settings, never loosens them.
+        val maxHoldSec = if (isRaceMode) preferences.alertHoldMaxSec.coerceAtMost(RACE_MAX_HOLD_SEC) else preferences.alertHoldMaxSec
+        val reRemindAfterSec = if (isRaceMode) preferences.reRemindAfterSec.coerceAtMost(RACE_RE_REMIND_SEC) else preferences.reRemindAfterSec
 
-        if (carbChannel.evaluate(elapsedSec, tracker.isCarbAlertDue(), isUnsafe, maxHoldSec, reRemindAfterSec)) {
+        if (preferences.carbAlertsEnabled &&
+            carbChannel.evaluate(elapsedSec, tracker.isCarbAlertDue(), isUnsafe, maxHoldSec, reRemindAfterSec)
+        ) {
             dispatchEatAlert(state.carbDebtGrams)
         }
 
-        if (fluidChannel.evaluate(elapsedSec, tracker.isFluidAlertDue(), isUnsafe, maxHoldSec, reRemindAfterSec)) {
+        if (preferences.fluidAlertsEnabled &&
+            fluidChannel.evaluate(elapsedSec, tracker.isFluidAlertDue(), isUnsafe, maxHoldSec, reRemindAfterSec)
+        ) {
             dispatchDrinkAlert()
         }
 
-        if (!bottleWarningFired && tracker.isBottleNearlyEmpty()) {
-            bottleWarningFired = true
-            dispatchBottleWarning()
+        if (preferences.sodiumAlertsEnabled &&
+            sodiumChannel.evaluate(elapsedSec, tracker.isSodiumAlertDue(), isUnsafe, maxHoldSec, reRemindAfterSec)
+        ) {
+            dispatchSodiumAlert(state.sodiumDebtMg)
+        }
+
+        if (tracker.isBottleNearlyEmpty()) {
+            if (!bottleWarningFired) {
+                bottleWarningFired = true
+                dispatchBottleWarning()
+            }
+        } else {
+            bottleWarningFired = false
+        }
+
+        if (tracker.isBottleEmpty()) {
+            if (!bottlesEmptyFired) {
+                bottlesEmptyFired = true
+                dispatchBottlesEmpty()
+            }
+        } else {
+            bottlesEmptyFired = false
         }
 
         checkPreClimbNudge(state.carbDebtGrams)
+        checkPreIntervalNudge(state.carbDebtGrams)
+    }
+
+    /** One-time heads-up (spec 3.1 extension) that a structured workout is active, offering to
+     * switch to Workout mode - only while the rider hasn't already confirmed a mode this ride. */
+    private fun checkWorkoutModeSuggestion() {
+        if (workoutSuggestionFired || rideModeConfirmedThisRide || !workoutActive) return
+        workoutSuggestionFired = true
+        karooSystem.dispatch(
+            SystemNotification(
+                "nutripro-workout-detected",
+                "Structured workout detected - switch to Workout mode for interval-aware fueling alerts?",
+                action = "Switch to Workout mode",
+                actionIntent = "com.nutripro.SET_RIDE_MODE_WORKOUT",
+            ),
+        )
+    }
+
+    /** One-time pre-ride-start reminder for Race mode (spec 3.1 extension): race fueling is
+     * front-loaded, unlike the purely reactive alerts the rest of the engine runs on. */
+    private fun checkRacePreload() {
+        if (racePreloadFired || preferences.rideMode != RideMode.RACE) return
+        racePreloadFired = true
+        dispatchAlert(
+            idPrefix = "race-preload",
+            icon = R.drawable.ic_food,
+            title = "Race mode - pre-load now",
+            detail = "If you haven't already, top up carbs before the effort ramps up.",
+            backgroundColor = R.color.alert_eat,
+            autoDismissMs = 10_000,
+            tones = listOf(
+                PlayBeepPattern.Tone(frequency = 1000, durationMs = 150),
+                PlayBeepPattern.Tone(frequency = null, durationMs = 80),
+                PlayBeepPattern.Tone(frequency = 1000, durationMs = 150),
+            ),
+        )
+    }
+
+    /** "Interval ending soon - eat now" (spec 3.1 extension, Workout mode): fires while the
+     * current step is a Z2 recovery that's about to end and isn't the workout's last step. */
+    private fun checkPreIntervalNudge(carbDebtGrams: Double) {
+        if (!preferences.carbAlertsEnabled || !workoutActive) return
+        if (lastNudgedWorkoutStep == workoutCurrentStep) return
+
+        val zone = preIntervalNudge.classifyZone(workoutTargetValue, zoneRanges)
+        if (preIntervalNudge.shouldNudge(
+                currentZone = zone,
+                timeToStepFinishSec = workoutTimeToStepFinishSec,
+                currentStepIndex = workoutCurrentStep,
+                totalSteps = workoutTotalSteps,
+                debtGrams = carbDebtGrams,
+                servingGrams = preferences.servingGrams.toDouble(),
+            )
+        ) {
+            lastNudgedWorkoutStep = workoutCurrentStep
+            dispatchIntervalAheadAlert()
+        }
     }
 
     /** One-time heads-up (spec 3.1 extension): explains the first-hour gate when we have no
@@ -452,9 +629,11 @@ class EatAlertManager(
 
         // Above ~60g/h a single sugar source (glucose/maltodextrin alone) saturates the gut's
         // SGLT1 transporter - a 2:1 or 1:0.8 glucose:fructose blend is needed to actually
-        // absorb it without GI distress.
+        // absorb it without GI distress. Race mode warns earlier since sustained high rates
+        // are more likely there.
         val carbTargetGph = tracker.stateFlow.value.carbTargetGph
-        val compositionNote = if (carbTargetGph > DUAL_SOURCE_THRESHOLD_GPH) {
+        val dualSourceThresholdGph = if (preferences.rideMode == RideMode.RACE) RACE_DUAL_SOURCE_THRESHOLD_GPH else DUAL_SOURCE_THRESHOLD_GPH
+        val compositionNote = if (carbTargetGph > dualSourceThresholdGph) {
             " Dual-source required: 2:1 or 1:0.8 glucose:fructose."
         } else {
             ""
@@ -500,6 +679,43 @@ class EatAlertManager(
                 PlayBeepPattern.Tone(frequency = 800, durationMs = 150),
             ),
         )
+
+        val sipMl = preferences.sipAmountMl.toInt()
+        karooSystem.dispatch(
+            SystemNotification(
+                "drink-notification",
+                "Drink water! Stay hydrated — take a sip.",
+                action = "Log ${sipMl}ml sip",
+                actionIntent = "com.nutripro.QUICK_LOG_WATER",
+            ),
+        )
+    }
+
+    private fun dispatchSodiumAlert(sodiumDebtMg: Double) {
+        Timber.d("Sodium alert: debt=%.0fmg", sodiumDebtMg)
+        dispatchAlert(
+            idPrefix = "sodium-reminder",
+            icon = R.drawable.ic_sodium,
+            title = "Low on sodium",
+            detail = "Debt: ${sodiumDebtMg.toInt()}mg",
+            backgroundColor = R.color.alert_sodium,
+            autoDismissMs = 8_000,
+            tones = listOf(
+                PlayBeepPattern.Tone(frequency = 700, durationMs = 150),
+                PlayBeepPattern.Tone(frequency = null, durationMs = 100),
+                PlayBeepPattern.Tone(frequency = 700, durationMs = 150),
+            ),
+        )
+
+        val doseMg = preferences.sodiumDoseMg.toInt()
+        karooSystem.dispatch(
+            SystemNotification(
+                "sodium-notification",
+                "Low on sodium. Debt: ${sodiumDebtMg.toInt()}mg.",
+                action = "Log ${doseMg}mg dose",
+                actionIntent = "com.nutripro.QUICK_LOG_SODIUM",
+            ),
+        )
     }
 
     private fun dispatchClimbAheadAlert() {
@@ -521,12 +737,42 @@ class EatAlertManager(
         )
     }
 
+    private fun dispatchIntervalAheadAlert() {
+        Timber.d("Interval-ending nudge (step %d/%d)", workoutCurrentStep, workoutTotalSteps)
+        dispatchAlert(
+            idPrefix = "interval-ahead",
+            icon = R.drawable.ic_food,
+            title = "Interval ending - eat now",
+            detail = "Top up before the next effort starts",
+            backgroundColor = R.color.alert_eat,
+            autoDismissMs = 10_000,
+            tones = listOf(
+                PlayBeepPattern.Tone(frequency = 1000, durationMs = 150),
+                PlayBeepPattern.Tone(frequency = null, durationMs = 80),
+                PlayBeepPattern.Tone(frequency = 1000, durationMs = 150),
+                PlayBeepPattern.Tone(frequency = null, durationMs = 80),
+                PlayBeepPattern.Tone(frequency = 1200, durationMs = 200),
+            ),
+        )
+    }
+
     private fun dispatchBottleWarning() {
         Timber.d("Bottle nearly empty")
         karooSystem.dispatch(
             SystemNotification(
                 "bottle-warning",
                 "Bottle nearly empty — plan a refill",
+            ),
+        )
+    }
+
+    private fun dispatchBottlesEmpty() {
+        Timber.d("Bottles empty")
+        val capacityMl = (preferences.bottleCount * preferences.bottleVolumeMl).toInt()
+        karooSystem.dispatch(
+            SystemNotification(
+                "bottles-empty",
+                "Bottles empty. You've used all ${capacityMl}ml — tap the Bottles field to refill.",
             ),
         )
     }

@@ -17,4 +17,11 @@ class IntensityZoneTest {
         assertEquals(90.0, IntensityZone.getRecommendedIntakeGph(105.0), 0.0)
         assertEquals(90.0, IntensityZone.getRecommendedIntakeGph(200.0), 0.0)
     }
+
+    @Test
+    fun `race mode raises only the top band's ceiling`() {
+        assertEquals(115.0, IntensityZone.getRecommendedIntakeGph(105.0, isRaceMode = true), 0.0)
+        // Lower bands are unaffected by race mode.
+        assertEquals(45.0, IntensityZone.getRecommendedIntakeGph(60.0, isRaceMode = true), 0.0)
+    }
 }

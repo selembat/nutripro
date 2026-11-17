@@ -59,11 +59,17 @@
         displayName="@string/dt_sodium_debt"
         description="@string/dt_sodium_debt_desc"
         graphical="true"
-        icon="@drawable/ic_water" />
+        icon="@drawable/ic_sodium" />
     <DataType
         typeId="ride-plan"
         displayName="@string/dt_ride_plan"
         description="@string/dt_ride_plan_desc"
+        graphical="true"
+        icon="@drawable/ic_food" />
+    <DataType
+        typeId="quick-carb"
+        displayName="@string/dt_quick_carb"
+        description="@string/dt_quick_carb_desc"
         graphical="true"
         icon="@drawable/ic_food" />
     <DataType
@@ -76,6 +82,66 @@
         typeId="quick-sodium"
         displayName="@string/dt_quick_sodium"
         description="@string/dt_quick_sodium_desc"
+        graphical="true"
+        icon="@drawable/ic_sodium" />
+    <DataType
+        typeId="add-carb"
+        displayName="@string/dt_add_carb"
+        description="@string/dt_add_carb_desc"
+        graphical="true"
+        icon="@drawable/ic_food" />
+    <DataType
+        typeId="add-fluid"
+        displayName="@string/dt_add_fluid"
+        description="@string/dt_add_fluid_desc"
+        graphical="true"
+        icon="@drawable/ic_water" />
+    <DataType
+        typeId="add-sodium"
+        displayName="@string/dt_add_sodium"
+        description="@string/dt_add_sodium_desc"
+        graphical="true"
+        icon="@drawable/ic_sodium" />
+    <DataType
+        typeId="fluid-burned"
+        displayName="@string/dt_fluid_burned"
+        description="@string/dt_fluid_burned_desc"
+        graphical="false"
+        icon="@drawable/ic_water" />
+    <DataType
+        typeId="fluid-eaten"
+        displayName="@string/dt_fluid_eaten"
+        description="@string/dt_fluid_eaten_desc"
+        graphical="false"
+        icon="@drawable/ic_water" />
+    <DataType
+        typeId="fluid-rate"
+        displayName="@string/dt_fluid_rate"
+        description="@string/dt_fluid_rate_desc"
+        graphical="false"
+        icon="@drawable/ic_water" />
+    <DataType
+        typeId="sodium-burned"
+        displayName="@string/dt_sodium_burned"
+        description="@string/dt_sodium_burned_desc"
+        graphical="false"
+        icon="@drawable/ic_sodium" />
+    <DataType
+        typeId="sodium-eaten"
+        displayName="@string/dt_sodium_eaten"
+        description="@string/dt_sodium_eaten_desc"
+        graphical="false"
+        icon="@drawable/ic_sodium" />
+    <DataType
+        typeId="sodium-rate"
+        displayName="@string/dt_sodium_rate"
+        description="@string/dt_sodium_rate_desc"
+        graphical="false"
+        icon="@drawable/ic_sodium" />
+    <DataType
+        typeId="bottles"
+        displayName="@string/dt_bottles"
+        description="@string/dt_bottles_desc"
         graphical="true"
         icon="@drawable/ic_water" />
 

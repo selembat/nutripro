@@ -27,4 +27,11 @@ class DurationGateTest {
         assertEquals(45.0, DurationGate.capGph(intensityTargetGph = 90.0, planSec = 60 * 60L), 0.0)
         assertEquals(90.0, DurationGate.capGph(intensityTargetGph = 90.0, planSec = 120 * 60L), 0.0)
     }
+
+    @Test
+    fun `a confirmed ride mode bypasses the duration gate entirely`() {
+        // Same 20-minute plan that would otherwise zero the target.
+        assertEquals(90.0, DurationGate.capGph(intensityTargetGph = 90.0, planSec = 20 * 60L, modeConfirmed = true), 0.0)
+        assertEquals(30.0, DurationGate.capGph(intensityTargetGph = 30.0, planSec = 0L, modeConfirmed = true), 0.0)
+    }
 }

@@ -1,6 +1,8 @@
 package com.nutripro.glance
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import com.nutripro.R
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -139,16 +141,20 @@ fun VerticalRule(color: Color = GlanceColors.Divider, thickness: Dp = 1.dp, heig
 }
 
 /** Renders "just now" / "<n>min" / "<h>h<m>m" for how long ago [timestampMs] was, or "-" if unset. */
-fun relativeMinutesLabel(timestampMs: Long): String {
-    if (timestampMs <= 0) return "-"
-    return minutesAgoLabel(((System.currentTimeMillis() - timestampMs) / 60_000).toInt())
+fun relativeMinutesLabel(context: Context, timestampMs: Long): String {
+    if (timestampMs <= 0) return context.getString(R.string.glance_dash)
+    return minutesAgoLabel(context, ((System.currentTimeMillis() - timestampMs) / 60_000).toInt())
 }
 
 /** Same rendering as [relativeMinutesLabel] but from an already-computed minute count. */
-fun minutesAgoLabel(minutesAgo: Int): String {
-    if (minutesAgo < 1) return "just now"
-    if (minutesAgo < 60) return "${minutesAgo}min"
+fun minutesAgoLabel(context: Context, minutesAgo: Int): String {
+    if (minutesAgo < 1) return context.getString(R.string.glance_just_now)
+    if (minutesAgo < 60) return context.getString(R.string.glance_minutes_short, minutesAgo)
     val hours = minutesAgo / 60
     val remainder = minutesAgo % 60
-    return if (remainder == 0) "${hours}h" else "${hours}h${remainder}m"
+    return if (remainder == 0) {
+        context.getString(R.string.glance_hours_short, hours)
+    } else {
+        context.getString(R.string.glance_hours_minutes_short, hours, remainder)
+    }
 }

@@ -44,3 +44,27 @@ class CarbsBurnedDataType(tracker: CarbBalanceTracker, extension: String) :
 
 class CarbsEatenDataType(tracker: CarbBalanceTracker, extension: String) :
     SingleValueDataType(tracker, extension, "carbs-eaten", select = { it.totalEaten })
+
+class FluidBurnedDataType(tracker: CarbBalanceTracker, extension: String) :
+    SingleValueDataType(tracker, extension, "fluid-burned", select = { it.sweatLossMl })
+
+class FluidEatenDataType(tracker: CarbBalanceTracker, extension: String) :
+    SingleValueDataType(tracker, extension, "fluid-eaten", select = { it.totalWaterMl })
+
+class FluidRateDataType(tracker: CarbBalanceTracker, extension: String) :
+    SingleValueDataType(tracker, extension, "fluid-rate", select = { it.sweatRateLph * 1000.0 })
+
+class SodiumBurnedDataType(tracker: CarbBalanceTracker, extension: String) :
+    SingleValueDataType(tracker, extension, "sodium-burned", select = { it.sodiumLossMg })
+
+class SodiumEatenDataType(tracker: CarbBalanceTracker, extension: String) :
+    SingleValueDataType(tracker, extension, "sodium-eaten", select = { it.totalSodiumMg })
+
+/** Average sodium loss rate so far this ride (mg/h) - no live instantaneous rate is tracked. */
+class SodiumRateDataType(tracker: CarbBalanceTracker, extension: String) :
+    SingleValueDataType(
+        tracker,
+        extension,
+        "sodium-rate",
+        select = { if (it.elapsedRideSec > 0) it.sodiumLossMg / (it.elapsedRideSec / 3600.0) else 0.0 },
+    )

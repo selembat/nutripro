@@ -2,6 +2,7 @@ package com.nutripro.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.nutripro.model.AmountPreset
 import com.nutripro.model.FoodTemplate
 import com.nutripro.model.RideNutritionState
 import kotlinx.serialization.encodeToString
@@ -15,7 +16,7 @@ import kotlin.reflect.KProperty
  * small delegated property instead of a hand-written get/set pair per field,
  * so adding a setting is one line rather than a getter/setter/key triple.
  */
-class Preferences(context: Context) {
+class Preferences(private val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("nutripro_prefs", Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -23,6 +24,11 @@ class Preferences(context: Context) {
     private fun longPref(key: String, default: Long) = PrefDelegate(prefs, key, default, SharedPreferences::getLong, SharedPreferences.Editor::putLong)
     private fun floatPref(key: String, default: Float) = PrefDelegate(prefs, key, default, SharedPreferences::getFloat, SharedPreferences.Editor::putFloat)
     private fun boolPref(key: String, default: Boolean) = PrefDelegate(prefs, key, default, SharedPreferences::getBoolean, SharedPreferences.Editor::putBoolean)
+    private fun stringPref(key: String, default: String) = PrefDelegate(
+        prefs, key, default,
+        read = { k, def -> getString(k, def) ?: def },
+        write = SharedPreferences.Editor::putString,
+    )
 
     /** FTP override; 0 means "use the Karoo profile value". */
     var ftpOverride: Int by intPref("ftp_override", 0)
@@ -32,6 +38,14 @@ class Preferences(context: Context) {
 
     var soundEnabled: Boolean by boolPref("sound_enabled", true)
     var fitExportEnabled: Boolean by boolPref("fit_export", false)
+
+    /** App-wide appearance: "SYSTEM" (follows the device's Android dark-mode setting), "LIGHT" or "DARK". */
+    var themeMode: String by stringPref("theme_mode", "SYSTEM")
+
+    /** Per-nutrient in-ride alert toggles - [soundEnabled] still gates whether any of them beep. */
+    var carbAlertsEnabled: Boolean by boolPref("carb_alerts_enabled", true)
+    var fluidAlertsEnabled: Boolean by boolPref("fluid_alerts_enabled", true)
+    var sodiumAlertsEnabled: Boolean by boolPref("sodium_alerts_enabled", true)
 
     /** Minutes of no intake before the first eat/drink reminder can fire. */
     var reminderStartMinutes: Int by intPref("reminder_start", 30)
@@ -84,23 +98,56 @@ class Preferences(context: Context) {
      */
     var plannedRideMinutes: Int by intPref("planned_ride_minutes", 0)
 
+    /**
+     * Ride mode (spec 3.1 extension): one of "CASUAL_Z2", "CASUAL_SPORT", "WORKOUT", "RACE".
+     * Sticky across rides - seeds the next ride's default, same as [sweatMultiplier].
+     */
+    var rideMode: String by stringPref("ride_mode", "CASUAL_Z2")
+
     /** Testing: feed a fixed simulated power/HR into the engine instead of real sensor data. */
     var simulationModeEnabled: Boolean by boolPref("simulation_mode_enabled", false)
     var simulatedPowerWatts: Float by floatPref("simulated_power_watts", 200f)
     var simulatedHeartRateBpm: Int by intPref("simulated_heart_rate_bpm", 140)
 
     fun loadFoodTemplates(): List<FoodTemplate> {
-        val raw = prefs.getString(KEY_FOOD_TEMPLATES, null) ?: return FoodTemplate.DEFAULTS
+        val defaults = FoodTemplate.defaults(context)
+        val raw = prefs.getString(KEY_FOOD_TEMPLATES, null) ?: return defaults
         return runCatching { json.decodeFromString<List<FoodTemplate>>(raw) }
             .onFailure { Timber.w(it, "Failed to load food templates") }
-            .getOrDefault(FoodTemplate.DEFAULTS)
+            .getOrDefault(defaults)
     }
 
     fun saveFoodTemplates(templates: List<FoodTemplate>) {
         prefs.edit().putString(KEY_FOOD_TEMPLATES, json.encodeToString(templates)).apply()
     }
 
-    fun getDefaultTemplate(): FoodTemplate = loadFoodTemplates().firstOrNull { it.isDefault } ?: FoodTemplate.DEFAULTS.first()
+    fun getDefaultTemplate(): FoodTemplate =
+        loadFoodTemplates().firstOrNull { it.isDefault } ?: FoodTemplate.defaults(context).first()
+
+    fun loadFluidPresets(): List<AmountPreset> = loadPresets(KEY_FLUID_PRESETS, AmountPreset.FLUID_DEFAULTS)
+
+    fun saveFluidPresets(presets: List<AmountPreset>) {
+        savePresets(KEY_FLUID_PRESETS, presets)
+        presets.firstOrNull { it.isDefault }?.let { sipAmountMl = it.amount.toFloat() }
+    }
+
+    fun loadSodiumPresets(): List<AmountPreset> = loadPresets(KEY_SODIUM_PRESETS, AmountPreset.SODIUM_DEFAULTS)
+
+    fun saveSodiumPresets(presets: List<AmountPreset>) {
+        savePresets(KEY_SODIUM_PRESETS, presets)
+        presets.firstOrNull { it.isDefault }?.let { sodiumDoseMg = it.amount.toFloat() }
+    }
+
+    private fun loadPresets(key: String, defaults: List<AmountPreset>): List<AmountPreset> {
+        val raw = prefs.getString(key, null) ?: return defaults
+        return runCatching { json.decodeFromString<List<AmountPreset>>(raw) }
+            .onFailure { Timber.w(it, "Failed to load presets for %s", key) }
+            .getOrDefault(defaults)
+    }
+
+    private fun savePresets(key: String, presets: List<AmountPreset>) {
+        prefs.edit().putString(key, json.encodeToString(presets)).apply()
+    }
 
     fun saveNutritionState(state: RideNutritionState) {
         prefs.edit().putString(KEY_NUTRITION_STATE, json.encodeToString(state)).apply()
@@ -120,6 +167,8 @@ class Preferences(context: Context) {
     private companion object {
         const val KEY_FOOD_TEMPLATES = "food_templates"
         const val KEY_NUTRITION_STATE = "nutrition_state"
+        const val KEY_FLUID_PRESETS = "fluid_presets"
+        const val KEY_SODIUM_PRESETS = "sodium_presets"
     }
 }
 

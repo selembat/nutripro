@@ -27,4 +27,5 @@
     <!-- Alert colors -->
     <color name="alert_eat">#FFD97706</color>
     <color name="alert_drink">#FF2563EB</color>
+    <color name="alert_sodium">#FF5A2073</color>
 </resources>

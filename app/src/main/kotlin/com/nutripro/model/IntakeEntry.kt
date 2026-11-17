@@ -14,6 +14,6 @@ data class IntakeEntry(
 ) {
     @Serializable
     enum class IntakeType {
-        FOOD, WATER, SODIUM
+        FOOD, WATER, SODIUM, COMPOUND
     }
 }

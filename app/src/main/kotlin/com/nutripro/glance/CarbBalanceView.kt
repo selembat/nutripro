@@ -5,11 +5,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalContext
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
+import com.nutripro.R
 import com.nutripro.karoo.LayoutSize
 import com.nutripro.karoo.getLayoutSize
 import io.hammerhead.karooext.models.ViewConfig
@@ -64,23 +66,25 @@ private fun JustTheNumber(r: BalanceReadings, p: BalancePalette) {
 
 @Composable
 private fun TitledNumber(r: BalanceReadings, p: BalancePalette) {
+    val context = LocalContext.current
     Column(modifier = GlanceModifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        CaptionText(text = "BALANCE", fontSize = 10.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_balance_caption), fontSize = 10.sp, color = p.dim)
         MetricText(text = r.balanceLabel, color = p.foreground, fontSize = 26.sp)
     }
 }
 
 @Composable
 private fun NumberWithThreeStats(r: BalanceReadings, p: BalancePalette) {
+    val context = LocalContext.current
     Column(modifier = GlanceModifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        CaptionText(text = "CARB BALANCE", fontSize = 10.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_carb_balance_caption), fontSize = 10.sp, color = p.dim)
         MetricText(text = r.balanceLabel, color = p.foreground, fontSize = 28.sp)
         Spacer(modifier = GlanceModifier.height(2.dp))
         StatRow(
             stats = listOf(
-                Stat("BURNED", r.burnedLabel, p.foreground),
-                Stat("EATEN", r.eatenLabel, p.foreground),
-                Stat("RATE", r.burnRateLabel, p.foreground),
+                Stat(context.getString(R.string.glance_burned), r.burnedLabel, p.foreground),
+                Stat(context.getString(R.string.glance_eaten), r.eatenLabel, p.foreground),
+                Stat(context.getString(R.string.glance_rate), r.burnRateLabel, p.foreground),
             ),
             labelFontSize = 9.sp,
             valueFontSize = 14.sp,
@@ -91,27 +95,31 @@ private fun NumberWithThreeStats(r: BalanceReadings, p: BalancePalette) {
 
 @Composable
 private fun NumberWithInlineSummary(r: BalanceReadings, p: BalancePalette) {
+    val context = LocalContext.current
     Column(modifier = GlanceModifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        CaptionText(text = "BALANCE", fontSize = 11.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_balance_caption), fontSize = 11.sp, color = p.dim)
         MetricText(text = r.balanceLabel, color = p.foreground, fontSize = 24.sp)
         Spacer(modifier = GlanceModifier.height(2.dp))
-        CaptionText(text = "B:${r.burnedLabel}  E:${r.eatenLabel}", fontSize = 12.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_compact_be, r.burnedLabel, r.eatenLabel), fontSize = 12.sp, color = p.dim)
     }
 }
 
 @Composable
 private fun FullBreakdown(r: BalanceReadings, p: BalancePalette) {
+    val context = LocalContext.current
     Column(modifier = GlanceModifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        CaptionText(text = "CARB BALANCE", fontSize = 11.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_carb_balance_caption), fontSize = 11.sp, color = p.dim)
         MetricText(text = r.balanceLabel, color = p.foreground, fontSize = 36.sp)
         Spacer(modifier = GlanceModifier.height(4.dp))
         HorizontalRule(color = p.dim)
         Spacer(modifier = GlanceModifier.height(4.dp))
         val rows = buildList {
-            add("BURNED" to r.burnedLabel)
-            add("EATEN" to r.eatenLabel)
-            add("BURN RATE" to r.burnRateLabel)
-            if (r.lastIntakeTimestampMs > 0) add("LAST EAT" to relativeMinutesLabel(r.lastIntakeTimestampMs))
+            add(context.getString(R.string.glance_burned) to r.burnedLabel)
+            add(context.getString(R.string.glance_eaten) to r.eatenLabel)
+            add(context.getString(R.string.glance_burn_rate) to r.burnRateLabel)
+            if (r.lastIntakeTimestampMs > 0) {
+                add(context.getString(R.string.glance_last_eat) to relativeMinutesLabel(context, r.lastIntakeTimestampMs))
+            }
         }
         rows.forEachIndexed { index, (label, value) ->
             if (index > 0) Spacer(modifier = GlanceModifier.height(2.dp))
@@ -122,12 +130,13 @@ private fun FullBreakdown(r: BalanceReadings, p: BalancePalette) {
 
 @Composable
 private fun StackedBreakdown(r: BalanceReadings, p: BalancePalette) {
+    val context = LocalContext.current
     Column(modifier = GlanceModifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        CaptionText(text = "BALANCE", fontSize = 11.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_balance_caption), fontSize = 11.sp, color = p.dim)
         MetricText(text = r.balanceLabel, color = p.foreground, fontSize = 28.sp)
         Spacer(modifier = GlanceModifier.height(4.dp))
-        CaptionText(text = "E: ${r.eatenLabel}", fontSize = 13.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_compact_e, r.eatenLabel), fontSize = 13.sp, color = p.dim)
         Spacer(modifier = GlanceModifier.height(2.dp))
-        CaptionText(text = "B: ${r.burnedLabel}", fontSize = 13.sp, color = p.dim)
+        CaptionText(text = context.getString(R.string.glance_compact_b, r.burnedLabel), fontSize = 13.sp, color = p.dim)
     }
 }

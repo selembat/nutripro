@@ -1,9 +1,12 @@
 package com.nutripro.karoo
 
 import androidx.compose.runtime.Composable
+import androidx.glance.LocalContext
+import com.nutripro.R
 import com.nutripro.engine.CarbBalanceTracker
 import com.nutripro.glance.GlanceColors
 import com.nutripro.glance.QuickActionButtonView
+import com.nutripro.glance.rememberFieldColors
 import com.nutripro.model.RideNutritionState
 import com.nutripro.util.Preferences
 import io.hammerhead.karooext.models.ViewConfig
@@ -20,14 +23,16 @@ class QuickSodiumLogDataType(
 
     @Composable
     override fun Content(state: RideNutritionState?, viewConfig: ViewConfig) {
+        val (bg, label) = rememberFieldColors(preferences.themeMode)
         QuickActionButtonView(
-            label = "QUICK SODIUM",
+            label = LocalContext.current.getString(R.string.dt_quick_sodium_short),
             valueText = preferences.sodiumDoseMg.toInt().toString(),
             unitText = "mg",
-            accentColor = GlanceColors.White,
+            accentColor = GlanceColors.Accent,
             quickLogMode = "confirm-sodium",
             viewConfig = viewConfig,
-            backgroundColor = GlanceColors.Background,
+            backgroundColor = bg,
+            labelColor = label,
         )
     }
 }

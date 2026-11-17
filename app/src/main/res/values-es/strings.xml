@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NutriPro</string>
+    <string name="extension_name">NutriPro</string>
+
+    <!-- Data Types -->
+    <string name="dt_carb_balance">Balance de carbohidratos</string>
+    <string name="dt_carb_balance_desc">Balance de carbohidratos en tiempo real (consumidos menos quemados)</string>
+    <string name="dt_carbs_burned">Carbohidratos quemados</string>
+    <string name="dt_carbs_burned_desc">Total de carbohidratos quemados durante la salida</string>
+    <string name="dt_carbs_eaten">Carbohidratos consumidos</string>
+    <string name="dt_carbs_eaten_desc">Total de carbohidratos consumidos durante la salida</string>
+    <string name="dt_burn_rate">Tasa de consumo</string>
+    <string name="dt_burn_rate_desc">Tasa actual de consumo de carbohidratos (g/h)</string>
+    <string name="dt_quick_log">Registro rápido</string>
+    <string name="dt_quick_log_desc">Último alimento registrado y tiempo desde la última ingesta</string>
+    <string name="dt_hydration">Hidratación</string>
+    <string name="dt_hydration_desc">Seguimiento de ingesta de agua y recordatorios</string>
+    <string name="dt_carb_debt">Balance de carbohidratos</string>
+    <string name="dt_carb_debt_desc">Balance de carbohidratos frente al objetivo ajustado a la intensidad (+adelanto / -déficit) - toca para añadir</string>
+    <string name="dt_fluid_debt">Balance de líquidos</string>
+    <string name="dt_fluid_debt_desc">Balance de líquidos frente al objetivo estimado según el sudor (+adelanto / -déficit) - toca para añadir</string>
+    <string name="dt_sodium_debt">Balance de sodio</string>
+    <string name="dt_sodium_debt_desc">Balance de sodio frente a la pérdida estimada por sudor (+adelanto / -déficit) - toca para añadir</string>
+    <string name="dt_ride_plan">Configuración de la salida</string>
+    <string name="dt_ride_plan_desc">Toca para definir el modo de salida (Suave Z2 / Deportivo / Entreno / Carrera) y la duración prevista</string>
+    <string name="dt_quick_carb">Quick Carb</string>
+    <string name="dt_quick_carb_desc">Toca para confirmar tu ración predeterminada, o registra una cantidad personalizada</string>
+    <string name="dt_quick_sip">Quick Sip</string>
+    <string name="dt_quick_sip_desc">Toca para confirmar un sorbo, o registra una cantidad personalizada</string>
+    <string name="dt_quick_sodium">Quick Sodium</string>
+    <string name="dt_quick_sodium_desc">Toca para confirmar una dosis de sodio, o registra una cantidad personalizada</string>
+    <string name="dt_add_carb">Añadir carbohidratos</string>
+    <string name="dt_add_carb_desc">Toca para elegir una plantilla de alimento, mezcla para bebidas o cantidad personalizada</string>
+    <string name="dt_add_fluid">Añadir líquido</string>
+    <string name="dt_add_fluid_desc">Toca para elegir una cantidad predefinida, mezcla para bebidas o cantidad personalizada</string>
+    <string name="dt_add_sodium">Añadir sodio</string>
+    <string name="dt_add_sodium_desc">Toca para elegir una dosis predefinida, mezcla para bebidas o cantidad personalizada</string>
+    <string name="dt_fluid_burned">Líquido perdido</string>
+    <string name="dt_fluid_burned_desc">Pérdida de líquido estimada por sudor en esta salida (ml)</string>
+    <string name="dt_fluid_eaten">Líquido consumido</string>
+    <string name="dt_fluid_eaten_desc">Total de líquido consumido en esta salida (ml)</string>
+    <string name="dt_fluid_rate">Tasa de líquido</string>
+    <string name="dt_fluid_rate_desc">Tasa actual estimada de pérdida por sudor (ml/h)</string>
+    <string name="dt_sodium_burned">Sodio perdido</string>
+    <string name="dt_sodium_burned_desc">Pérdida de sodio estimada por sudor en esta salida (mg)</string>
+    <string name="dt_sodium_eaten">Sodio consumido</string>
+    <string name="dt_sodium_eaten_desc">Total de sodio consumido en esta salida (mg)</string>
+    <string name="dt_sodium_rate">Tasa de sodio</string>
+    <string name="dt_sodium_rate_desc">Tasa media de pérdida de sodio hasta ahora en esta salida (mg/h)</string>
+    <string name="dt_bottles">Bidones</string>
+    <string name="dt_bottles_desc">Líquido restante en todos los bidones - toca para rellenar</string>
+
+    <!-- Bonus Actions -->
+    <string name="action_log_food">Registrar comida</string>
+    <string name="action_log_water">Registrar agua</string>
+    <string name="action_quick_gel">Quick Gel</string>
+    <string name="action_undo_last">Deshacer último</string>
+
+    <!-- Alerts -->
+    <string name="alert_eat_title">¡Hora de comer!</string>
+    <string name="alert_eat_detail">Recomendado: %1$dg de carbohidratos. Balance: %2$dg</string>
+    <string name="alert_drink_title">¡Bebe agua!</string>
+    <string name="alert_drink_detail">Mantente hidratado — toma un sorbo</string>
+
+    <!-- Units -->
+    <string name="unit_grams">g</string>
+    <string name="unit_grams_per_hour">g/h</string>
+    <string name="unit_ml">ml</string>
+    <string name="unit_minutes">min</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">NutriPro en segundo plano</string>
+    <string name="notification_channel_description">Seguimiento nutricional durante las salidas</string>
+    <string name="notification_title">NutriPro</string>
+    <string name="notification_text">Registrando nutrición</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Ajustes de NutriPro</string>
+    <string name="settings_ftp_override">Anular FTP</string>
+    <string name="settings_weight_override">Anular peso</string>
+    <string name="settings_use_karoo_profile">Usar perfil de Karoo</string>
+    <string name="settings_food_templates">Plantillas de alimentos</string>
+    <string name="settings_sound_enabled">Alertas de sonido</string>
+    <string name="settings_fit_export">Exportación FIT</string>
+
+    <!-- Quick Log -->
+    <string name="quick_log_title">Registrar comida</string>
+    <string name="quick_log_water_title">Registrar agua</string>
+    <string name="quick_log_custom">Personalizado</string>
+    <string name="quick_log_logged">%1$s registrado</string>
+
+    <!-- Settings screen: chrome, sections, labels -->
+    <string name="cd_back">Atrás</string>
+    <string name="settings_screen_title">AJUSTES DE NUTRIPRO</string>
+    <string name="section_appearance">APARIENCIA</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="section_profile">PERFIL</string>
+    <string name="label_ftp">FTP</string>
+    <string name="label_weight">Peso</string>
+    <string name="source_row_label">Origen de %1$s</string>
+    <string name="source_karoo">Karoo</string>
+    <string name="source_custom">Personalizado</string>
+    <string name="section_sweat_calibration">CALIBRACIÓN DE SUDOR</string>
+    <string name="label_pre_ride_weight">Peso antes de la salida</string>
+    <string name="label_post_ride_weight">Peso después de la salida</string>
+    <string name="label_current_multiplier">Multiplicador actual</string>
+    <string name="calibration_message">Actualizado a %1$.2f× (medido %2$.0fml perdidos)</string>
+    <string name="section_food_templates">PLANTILLAS DE ALIMENTOS</string>
+    <string name="badge_default">PREDETERMINADO</string>
+    <string name="cd_set_as_default">Establecer como predeterminado</string>
+    <string name="cd_delete">Eliminar</string>
+    <string name="placeholder_amount_unit">Cantidad %1$s</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_add">Añadir</string>
+    <string name="action_add_preset">Añadir preajuste</string>
+    <string name="section_fluid_presets">PREAJUSTES DE LÍQUIDO</string>
+    <string name="section_sodium_presets">PREAJUSTES DE SODIO</string>
+    <string name="section_alerts">ALERTAS</string>
+    <string name="label_carb_alerts">Alertas de carbohidratos</string>
+    <string name="label_fluid_alerts">Alertas de líquido</string>
+    <string name="label_sodium_alerts">Alertas de sodio</string>
+    <string name="label_sound">Sonido</string>
+    <string name="action_add_template">Añadir plantilla</string>
+    <string name="label_serving_size">Tamaño de ración</string>
+    <string name="label_sip_size">Tamaño de sorbo</string>
+    <string name="label_quick_sip_amount">Cantidad de Quick Sip</string>
+    <string name="label_bottle_count">Número de bidones</string>
+    <string name="label_bottle_size">Tamaño de bidón</string>
+    <string name="label_first_alert_after">Primera alerta después de</string>
+    <string name="section_fueling">NUTRICIÓN EN RUTA</string>
+    <string name="label_weather_temperature">Temperatura meteorológica</string>
+    <string name="label_manual_temp_fallback">Temp. manual (reserva)</string>
+    <string name="label_manual_temperature">Temperatura manual</string>
+    <string name="section_options">OPCIONES</string>
+    <string name="section_testing">PRUEBAS</string>
+    <string name="label_simulation_mode">Modo de simulación</string>
+    <string name="label_simulated_power">Potencia simulada</string>
+    <string name="label_simulated_heart_rate">Frecuencia cardíaca simulada</string>
+    <string name="warning_simulation_mode">Usando potencia/FC simuladas en lugar de sensores reales — desactívalo antes de una salida real.</string>
+    <string name="section_about">ACERCA DE</string>
+    <string name="label_version">Versión</string>
+    <string name="label_github">GitHub</string>
+    <string name="label_contact">Contacto</string>
+    <string name="label_privacy_policy">Política de privacidad</string>
+    <string name="label_license">Licencia</string>
+    <string name="value_license_mit">MIT</string>
+    <string name="helper_range">Rango: %1$d - %2$d %3$s</string>
+    <string name="action_save">GUARDAR</string>
+    <string name="hint_from_karoo_profile">Del perfil de Karoo</string>
+    <string name="action_calibrate_from_ride">Calibrar con esta salida</string>
+    <string name="hint_calibrate_requirement">Introduce ambos pesajes tras una salida para calibrar</string>
+    <string name="toggle_on">ACT</string>
+    <string name="toggle_off">DES</string>
+    <string name="suffix_quick_gel_default"> · Predeterminado de Quick Gel</string>
+    <string name="cd_set_as_quick_gel_default">Establecer como predeterminado de Quick Gel</string>
+    <string name="pill_food">COMIDA</string>
+    <string name="pill_drink_mix">MEZCLA PARA BEBIDA</string>
+    <string name="placeholder_name">Nombre</string>
+    <string name="placeholder_carbs_g">Carbohidratos g</string>
+    <string name="placeholder_fluid_ml">Líquido ml</string>
+    <string name="placeholder_sodium_mg">Sodio mg</string>
+    <string name="placeholder_default_sip_ml">Sorbo predeterminado ml</string>
+    <string name="unit_watts_suffix">" W"</string>
+    <string name="unit_kg_suffix">" kg"</string>
+
+    <!-- Quick Log screen -->
+    <string name="toast_switched_workout">Cambiado a modo Entreno</string>
+    <string name="dialog_quick_carb_title">QUICK CARB</string>
+    <string name="confirm_ate_food">¿Comiste %1$s (%2$dg)?</string>
+    <string name="dialog_quick_sip_title">QUICK SIP</string>
+    <string name="confirm_drank_sip">¿Bebiste un sorbo (%1$dml)?</string>
+    <string name="dialog_quick_sodium_title">QUICK SODIUM</string>
+    <string name="confirm_took_sodium">¿Tomaste una dosis de sodio (%1$dmg)?</string>
+    <string name="toast_not_running">NutriPro no está en ejecución</string>
+    <string name="toast_logged_full">%1$s registrado: %2$dg carbohidratos, %3$dml, %4$dmg sodio</string>
+    <string name="toast_logged_food">%1$s registrado (%2$dg)</string>
+    <string name="template_custom_grams">Personalizado %1$dg</string>
+    <string name="toast_logged_carbs">%1$dg de carbohidratos registrados</string>
+    <string name="toast_logged_water">%1$dml de agua registrados</string>
+    <string name="toast_logged_sodium">%1$dmg de sodio registrados</string>
+    <string name="toast_undone">Deshecho</string>
+    <string name="toast_nothing_to_undo">Nada que deshacer</string>
+    <string name="toast_refilled">%1$dml rellenados</string>
+    <string name="toast_ride_mode_set">Modo de salida ajustado a %1$s</string>
+    <string name="time_just_now">ahora mismo</string>
+    <string name="time_minutes_ago">hace %1$dmin</string>
+    <string name="action_undo_last_button">Deshacer último</string>
+    <string name="dialog_custom_carbs_title">CARBOHIDRATOS PERSONALIZADOS</string>
+    <string name="dialog_log_food_title">REGISTRAR COMIDA</string>
+    <string name="label_carbs">CARBOHIDRATOS</string>
+    <string name="unit_grams_label">gramos</string>
+    <string name="cd_plus5">+5</string>
+    <string name="action_back">ATRÁS</string>
+    <string name="action_log_grams">REGISTRAR %1$dg</string>
+    <string name="hint_adds_all">añade carbohidratos + líquido + sodio</string>
+    <string name="stat_fluid_sodium">%1$dml · %2$dmg</string>
+    <string name="action_custom">PERSONALIZADO</string>
+    <string name="action_cancel_caps">CANCELAR</string>
+    <string name="dialog_log_water_title">REGISTRAR AGUA</string>
+    <string name="dialog_log_sodium_title">REGISTRAR SODIO</string>
+    <string name="dialog_custom_amount_title">CANTIDAD PERSONALIZADA</string>
+    <string name="dialog_custom_refill_title">RELLENO PERSONALIZADO</string>
+    <string name="dialog_refill_bottles_title">RELLENAR BIDONES</string>
+    <string name="cd_plus_step">+%1$s</string>
+    <string name="action_log_amount">REGISTRAR %1$s%2$s</string>
+    <string name="action_confirm">CONFIRMAR</string>
+    <string name="confirm_refill_both">¿Rellenar ambos bidones?</string>
+    <string name="action_refill_full">RELLENAR COMPLETO (%1$dml)</string>
+    <string name="cd_plus50">+50</string>
+    <string name="action_refill_amount">RELLENAR %1$dml</string>
+    <string name="ridemode_casual_z2">Suave Z2</string>
+    <string name="ridemode_casual_sport">Suave Deportivo</string>
+    <string name="ridemode_workout">Entreno</string>
+    <string name="ridemode_race">Carrera</string>
+    <string name="ridemode_casual_z2_title">Suave · Z2</string>
+    <string name="ridemode_casual_z2_subtitle">relajado, objetivo de carbohidratos más bajo</string>
+    <string name="ridemode_casual_sport_title">Suave · Deportivo (Z3-Z4)</string>
+    <string name="ridemode_casual_sport_subtitle">esfuerzo constante, objetivo más alto</string>
+    <string name="ridemode_workout_subtitle">sigue tu entrenamiento cargado</string>
+    <string name="ridemode_race_subtitle">a tope, precarga + alertas rápidas</string>
+    <string name="duration_using_route">Usando ruta cargada</string>
+    <string name="duration_lt_1h">&lt; 1 hora</string>
+    <string name="duration_1_2h">1 - 2 horas</string>
+    <string name="duration_2_3h">2 - 3 horas</string>
+    <string name="duration_3_4h">3 - 4 horas</string>
+    <string name="duration_4h_plus">más de 4 horas</string>
+    <string name="step_title_ride_mode">MODO DE SALIDA · 1/2</string>
+    <string name="step_title_ride_plan">PLAN DE SALIDA · 2/2</string>
+
+    <!-- Glance tiles -->
+    <string name="glance_dash">-</string>
+    <string name="glance_just_now">ahora mismo</string>
+    <string name="glance_minutes_short">%1$dmin</string>
+    <string name="glance_hours_short">%1$dh</string>
+    <string name="glance_hours_minutes_short">%1$dh%2$dm</string>
+    <string name="glance_balance_caption">BALANCE</string>
+    <string name="glance_carb_balance_caption">BALANCE DE CARBOHIDRATOS</string>
+    <string name="glance_burned">QUEMADO</string>
+    <string name="glance_eaten">CONSUMIDO</string>
+    <string name="glance_rate">TASA</string>
+    <string name="glance_compact_be">Q:%1$s  C:%2$s</string>
+    <string name="glance_burn_rate">TASA DE CONSUMO</string>
+    <string name="glance_last_eat">ÚLTIMA COMIDA</string>
+    <string name="glance_compact_e">C: %1$s</string>
+    <string name="glance_compact_b">Q: %1$s</string>
+    <string name="glance_hydration_caption">HIDRATACIÓN</string>
+    <string name="glance_total">TOTAL</string>
+    <string name="glance_sips">SORBOS</string>
+    <string name="glance_last_food_caption">ÚLTIMA COMIDA</string>
+    <string name="glance_name">NOMBRE</string>
+    <string name="glance_ago">HACE</string>
+    <string name="glance_bal">BAL</string>
+    <string name="glance_time">TIEMPO</string>
+    <string name="glance_balance">BALANCE</string>
+    <string name="glance_compact_bal">Bal: %1$s</string>
+
+    <!-- Data type tiles -->
+    <string name="dt_fluid_short">LÍQUIDO</string>
+    <string name="dt_bottles_short">BIDONES</string>
+    <string name="dt_carb_short">CARBOHIDRATO</string>
+    <string name="dt_sodium_short">SODIO</string>
+    <string name="dt_quick_sodium_short">QUICK SODIUM</string>
+    <string name="dt_add_carb_short">AÑADIR CARB.</string>
+    <string name="dt_select">SELECCIONAR</string>
+    <string name="dt_add_sodium_short">AÑADIR SODIO</string>
+    <string name="dt_add_fluid_short">AÑADIR LÍQUIDO</string>
+    <string name="dt_quick_carb_short">QUICK CARB</string>
+    <string name="dt_quick_sip_short">QUICK SIP</string>
+    <string name="rideplan_using_route">usando ruta</string>
+    <string name="rideplan_hour_plan">plan %1$dh</string>
+    <string name="rideplan_min_plan">plan %1$dm</string>
+    <string name="rideplan_casual_z2">SUAVE Z2</string>
+    <string name="rideplan_sport">DEPORTIVO</string>
+    <string name="rideplan_workout">ENTRENO</string>
+    <string name="rideplan_race">CARRERA</string>
+    <string name="rideplan_setup">CONFIGURACIÓN DE SALIDA</string>
+
+    <!-- FIT export summary -->
+    <string name="fit_ride_summary_comment">Resumen de la salida: %1$.0fg carbohidratos, %2$.0fml agua (pérdida de sudor estimada %3$.1fL)</string>
+
+    <!-- Eat/drink/sodium alert notifications -->
+    <string name="alert_workout_detected_title">Entreno estructurado detectado - ¿cambiar a modo Entreno para alertas nutricionales según intervalos?</string>
+    <string name="action_switch_workout_mode">Cambiar a modo Entreno</string>
+    <string name="alert_race_preload_title">Modo Carrera - precarga ahora</string>
+    <string name="alert_race_preload_detail">Si aún no lo has hecho, reabastece carbohidratos antes de que aumente el esfuerzo.</string>
+    <string name="alert_no_route_title">Las alertas nutricionales empiezan tras 1h</string>
+    <string name="alert_no_route_detail">No hay ruta ni duración planificada - carga una ruta o establece un plan de salida si vas a rodar más tiempo.</string>
+    <string name="composition_note"> Se requiere doble fuente: 2:1 o 1:0,8 glucosa:fructosa.</string>
+    <string name="alert_eat_detail_full">Recomendado: %1$dg de carbohidratos. Déficit: %2$dg.%3$s</string>
+    <string name="notif_eat_text">¡Hora de comer! %1$s</string>
+    <string name="action_log_food_grams">Registrar %1$s %2$dg</string>
+    <string name="notif_drink_text">¡Bebe agua! Mantente hidratado — toma un sorbo.</string>
+    <string name="action_log_sip">Registrar sorbo de %1$dml</string>
+    <string name="alert_low_sodium_title">Poco sodio</string>
+    <string name="alert_low_sodium_detail">Déficit: %1$dmg</string>
+    <string name="notif_low_sodium_text">Poco sodio. Déficit: %1$dmg.</string>
+    <string name="action_log_sodium_dose">Registrar dosis de %1$dmg</string>
+    <string name="alert_climb_title">Subida por delante – come ahora</string>
+    <string name="alert_climb_detail">Reabastece antes de que empiece la subida</string>
+    <string name="alert_interval_title">Intervalo terminando - come ahora</string>
+    <string name="alert_interval_detail">Reabastece antes del siguiente esfuerzo</string>
+    <string name="notif_bottle_low">Bidón casi vacío — planifica un relleno</string>
+    <string name="notif_bottles_empty">Bidones vacíos. Has usado %1$dml en total — toca el campo de bidones para rellenar.</string>
+
+    <!-- FTP reminder -->
+    <string name="notif_set_ftp">Configura tu FTP para un seguimiento preciso. Abre los ajustes de NutriPro o tu perfil de Karoo.</string>
+    <string name="action_open_settings">Abrir ajustes</string>
+
+    <!-- Logged entry display names -->
+    <string name="entry_water_ml">%1$dml de agua</string>
+    <string name="entry_sodium_mg">%1$dmg de sodio</string>
+
+    <!-- Default food template seed names -->
+    <string name="food_energy_bar">Barrita energética</string>
+    <string name="food_banana">Plátano</string>
+    <string name="food_energy_gel">Gel energético</string>
+    <string name="label_generic_entry">entrada</string>
+    <string name="label_logged_summary">%1$s · registrado %2$s</string>
+</resources>

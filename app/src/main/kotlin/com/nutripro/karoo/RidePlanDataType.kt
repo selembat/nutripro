@@ -5,7 +5,9 @@ import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
 import com.nutripro.glance.GlanceColors
-import com.nutripro.glance.QuickActionButtonView
+import com.nutripro.glance.RideSetupFieldView
+import com.nutripro.glance.rememberFieldColors
+import com.nutripro.model.RideMode
 import com.nutripro.util.Preferences
 import io.hammerhead.karooext.extension.DataTypeImpl
 import io.hammerhead.karooext.internal.ViewEmitter
@@ -16,10 +18,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 /**
- * One-tap "Ride Plan" button (spec 3.1 extension): tap to pick how long you're planning to
- * ride, same picker-menu interaction as Quick Log. Feeds [com.nutripro.engine.DurationGate]
- * when no route is loaded. Re-renders on a timer since the chosen plan isn't part of the
- * live ride state - just a Preferences value.
+ * One-tap "Ride Setup" field (spec 3.1 extension): shows the current ride mode plus the
+ * planned ride length in one tile, tap opens [com.nutripro.ui.RideSetupScreen]'s combined
+ * mode-then-duration picker. Keeps the "ride-plan" typeId so existing Karoo screen layouts
+ * that already placed this field don't need to be re-added. Re-renders on a timer
+ * since neither value is part of the live ride state - just [Preferences] values.
  */
 @OptIn(ExperimentalGlanceRemoteViewsApi::class)
 class RidePlanDataType(
@@ -35,21 +38,30 @@ class RidePlanDataType(
         val viewJob = CoroutineScope(Dispatchers.IO).launch {
             while (true) {
                 val minutes = preferences.plannedRideMinutes
-                val valueText = if (minutes <= 0) {
-                    "SET"
-                } else if (minutes >= 60) {
-                    "${minutes / 60}h${if (minutes % 60 != 0) (minutes % 60).toString() else ""}"
-                } else {
-                    "${minutes}m"
+                val durationText = when {
+                    minutes <= 0 -> "using route"
+                    minutes >= 60 -> "${minutes / 60}h${if (minutes % 60 != 0) (minutes % 60).toString() else ""} plan"
+                    else -> "${minutes}m plan"
+                }
+                val mode = preferences.rideMode
+                val modeText = when (mode) {
+                    RideMode.CASUAL_Z2 -> "CASUAL Z2"
+                    RideMode.CASUAL_SPORT -> "SPORT"
+                    RideMode.WORKOUT -> "WORKOUT"
+                    RideMode.RACE -> "RACE"
+                    else -> mode
                 }
                 val result = glance.compose(context, DpSize.Unspecified) {
-                    QuickActionButtonView(
-                        label = "RIDE PLAN",
-                        valueText = valueText,
-                        unitText = "",
-                        accentColor = GlanceColors.Accent,
-                        quickLogMode = "duration",
+                    val (bg, label) = rememberFieldColors(preferences.themeMode)
+                    RideSetupFieldView(
+                        label = "RIDE SETUP",
+                        primaryValueText = modeText,
+                        secondaryValueText = durationText,
+                        accentColor = GlanceColors.rideModeAccent(mode),
+                        quickLogMode = "ride-setup",
                         viewConfig = config,
+                        backgroundColor = bg,
+                        labelColor = label,
                     )
                 }
                 emitter.updateView(result.remoteViews)

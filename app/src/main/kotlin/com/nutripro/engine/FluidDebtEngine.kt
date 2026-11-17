@@ -51,6 +51,12 @@ class FluidDebtEngine(
         this.remainingBottleMl = remainingBottleMl
     }
 
+    /** Adds [addedMl] back to the bottle total, capped at [capacityMl] (a full or partial refill). */
+    fun refill(addedMl: Double, capacityMl: Double) {
+        require(addedMl >= 0.0)
+        remainingBottleMl = (remainingBottleMl + addedMl).coerceIn(0.0, capacityMl)
+    }
+
     /** [sipBlockMl] is read fresh on every call. */
     fun isAlertDue(sipBlockMl: Double): Boolean = debtMl >= sipBlockMl
 

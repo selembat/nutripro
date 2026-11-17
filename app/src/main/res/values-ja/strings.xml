@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NutriPro</string>
+    <string name="extension_name">NutriPro</string>
+
+    <!-- Data Types -->
+    <string name="dt_carb_balance">炭水化物バランス</string>
+    <string name="dt_carb_balance_desc">リアルタイムの炭水化物バランス（摂取量から消費量を引いた値）</string>
+    <string name="dt_carbs_burned">消費した炭水化物</string>
+    <string name="dt_carbs_burned_desc">ライド中に消費した炭水化物の合計</string>
+    <string name="dt_carbs_eaten">摂取した炭水化物</string>
+    <string name="dt_carbs_eaten_desc">ライド中に摂取した炭水化物の合計</string>
+    <string name="dt_burn_rate">消費レート</string>
+    <string name="dt_burn_rate_desc">現在の炭水化物消費レート（g/h）</string>
+    <string name="dt_quick_log">クイック記録</string>
+    <string name="dt_quick_log_desc">最後に記録した食品と最後の摂取からの経過時間</string>
+    <string name="dt_hydration">水分補給</string>
+    <string name="dt_hydration_desc">水分摂取の記録とリマインダー</string>
+    <string name="dt_carb_debt">炭水化物バランス</string>
+    <string name="dt_carb_debt_desc">強度に応じた目標摂取量との炭水化物バランス（+余裕 / -不足）- タップして追加</string>
+    <string name="dt_fluid_debt">水分バランス</string>
+    <string name="dt_fluid_debt_desc">発汗量に基づく目標摂取量との水分バランス（+余裕 / -不足）- タップして追加</string>
+    <string name="dt_sodium_debt">ナトリウムバランス</string>
+    <string name="dt_sodium_debt_desc">推定発汗損失とのナトリウムバランス（+余裕 / -不足）- タップして追加</string>
+    <string name="dt_ride_plan">ライド設定</string>
+    <string name="dt_ride_plan_desc">タップしてライドモード（カジュアルZ2 / スポーツ / ワークアウト / レース）と予定時間を設定</string>
+    <string name="dt_quick_carb">Quick Carb</string>
+    <string name="dt_quick_carb_desc">タップしてデフォルトの補給量を確認、またはカスタム量を記録</string>
+    <string name="dt_quick_sip">Quick Sip</string>
+    <string name="dt_quick_sip_desc">タップして一口分を確認、またはカスタム量を記録</string>
+    <string name="dt_quick_sodium">Quick Sodium</string>
+    <string name="dt_quick_sodium_desc">タップしてナトリウム摂取を確認、またはカスタム量を記録</string>
+    <string name="dt_add_carb">炭水化物を追加</string>
+    <string name="dt_add_carb_desc">タップして食品テンプレート、ドリンクミックス、またはカスタム量を選択</string>
+    <string name="dt_add_fluid">水分を追加</string>
+    <string name="dt_add_fluid_desc">タップして定量、ドリンクミックス、またはカスタム量を選択</string>
+    <string name="dt_add_sodium">ナトリウムを追加</string>
+    <string name="dt_add_sodium_desc">タップして定量、ドリンクミックス、またはカスタム量を選択</string>
+    <string name="dt_fluid_burned">失われた水分</string>
+    <string name="dt_fluid_burned_desc">このライドでの推定発汗による水分損失（ml）</string>
+    <string name="dt_fluid_eaten">摂取した水分</string>
+    <string name="dt_fluid_eaten_desc">このライドで摂取した水分の合計（ml）</string>
+    <string name="dt_fluid_rate">水分レート</string>
+    <string name="dt_fluid_rate_desc">現在の推定発汗損失レート（ml/h）</string>
+    <string name="dt_sodium_burned">失われたナトリウム</string>
+    <string name="dt_sodium_burned_desc">このライドでの推定発汗によるナトリウム損失（mg）</string>
+    <string name="dt_sodium_eaten">摂取したナトリウム</string>
+    <string name="dt_sodium_eaten_desc">このライドで摂取したナトリウムの合計（mg）</string>
+    <string name="dt_sodium_rate">ナトリウムレート</string>
+    <string name="dt_sodium_rate_desc">このライドでのこれまでの平均ナトリウム損失レート（mg/h）</string>
+    <string name="dt_bottles">ボトル</string>
+    <string name="dt_bottles_desc">すべてのボトルに残っている水分 - タップして補充</string>
+
+    <!-- Bonus Actions -->
+    <string name="action_log_food">食事を記録</string>
+    <string name="action_log_water">水分を記録</string>
+    <string name="action_quick_gel">Quick Gel</string>
+    <string name="action_undo_last">直前の記録を取り消す</string>
+
+    <!-- Alerts -->
+    <string name="alert_eat_title">食事の時間です！</string>
+    <string name="alert_eat_detail">推奨: 炭水化物 %1$dg。バランス: %2$dg</string>
+    <string name="alert_drink_title">水を飲んでください！</string>
+    <string name="alert_drink_detail">水分補給をしましょう — 一口飲んでください</string>
+
+    <!-- Units -->
+    <string name="unit_grams">g</string>
+    <string name="unit_grams_per_hour">g/h</string>
+    <string name="unit_ml">ml</string>
+    <string name="unit_minutes">分</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">NutriPro バックグラウンド</string>
+    <string name="notification_channel_description">ライド中の栄養トラッキング</string>
+    <string name="notification_title">NutriPro</string>
+    <string name="notification_text">栄養状態を記録中</string>
+
+    <!-- Settings -->
+    <string name="settings_title">NutriPro 設定</string>
+    <string name="settings_ftp_override">FTPを上書き</string>
+    <string name="settings_weight_override">体重を上書き</string>
+    <string name="settings_use_karoo_profile">Karooプロフィールを使用</string>
+    <string name="settings_food_templates">食品テンプレート</string>
+    <string name="settings_sound_enabled">サウンドアラート</string>
+    <string name="settings_fit_export">FITエクスポート</string>
+
+    <!-- Quick Log -->
+    <string name="quick_log_title">食事を記録</string>
+    <string name="quick_log_water_title">水分を記録</string>
+    <string name="quick_log_custom">カスタム</string>
+    <string name="quick_log_logged">%1$s を記録しました</string>
+
+    <!-- Settings screen: chrome, sections, labels -->
+    <string name="cd_back">戻る</string>
+    <string name="settings_screen_title">NUTRIPRO 設定</string>
+    <string name="section_appearance">外観</string>
+    <string name="theme_system">システム</string>
+    <string name="theme_light">ライト</string>
+    <string name="theme_dark">ダーク</string>
+    <string name="section_profile">プロフィール</string>
+    <string name="label_ftp">FTP</string>
+    <string name="label_weight">体重</string>
+    <string name="source_row_label">%1$s のソース</string>
+    <string name="source_karoo">Karoo</string>
+    <string name="source_custom">カスタム</string>
+    <string name="section_sweat_calibration">発汗キャリブレーション</string>
+    <string name="label_pre_ride_weight">ライド前の体重</string>
+    <string name="label_post_ride_weight">ライド後の体重</string>
+    <string name="label_current_multiplier">現在の倍率</string>
+    <string name="calibration_message">%1$.2f× に更新しました（%2$.0fml の損失を測定）</string>
+    <string name="section_food_templates">食品テンプレート</string>
+    <string name="badge_default">デフォルト</string>
+    <string name="cd_set_as_default">デフォルトに設定</string>
+    <string name="cd_delete">削除</string>
+    <string name="placeholder_amount_unit">量 %1$s</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_add">追加</string>
+    <string name="action_add_preset">プリセットを追加</string>
+    <string name="section_fluid_presets">水分プリセット</string>
+    <string name="section_sodium_presets">ナトリウムプリセット</string>
+    <string name="section_alerts">アラート</string>
+    <string name="label_carb_alerts">炭水化物アラート</string>
+    <string name="label_fluid_alerts">水分アラート</string>
+    <string name="label_sodium_alerts">ナトリウムアラート</string>
+    <string name="label_sound">サウンド</string>
+    <string name="action_add_template">テンプレートを追加</string>
+    <string name="label_serving_size">1回分のサイズ</string>
+    <string name="label_sip_size">一口のサイズ</string>
+    <string name="label_quick_sip_amount">Quick Sip の量</string>
+    <string name="label_bottle_count">ボトルの数</string>
+    <string name="label_bottle_size">ボトルのサイズ</string>
+    <string name="label_first_alert_after">最初のアラートまでの時間</string>
+    <string name="section_fueling">補給設定</string>
+    <string name="label_weather_temperature">気象情報の気温</string>
+    <string name="label_manual_temp_fallback">手動気温（予備）</string>
+    <string name="label_manual_temperature">手動気温</string>
+    <string name="section_options">オプション</string>
+    <string name="section_testing">テスト</string>
+    <string name="label_simulation_mode">シミュレーションモード</string>
+    <string name="label_simulated_power">シミュレートされたパワー</string>
+    <string name="label_simulated_heart_rate">シミュレートされた心拍数</string>
+    <string name="warning_simulation_mode">実際のセンサーの代わりにシミュレートされたパワー/心拍数を使用しています — 実際のライドの前にオフにしてください。</string>
+    <string name="section_about">このアプリについて</string>
+    <string name="label_version">バージョン</string>
+    <string name="label_github">GitHub</string>
+    <string name="label_contact">お問い合わせ</string>
+    <string name="label_privacy_policy">プライバシーポリシー</string>
+    <string name="label_license">ライセンス</string>
+    <string name="value_license_mit">MIT</string>
+    <string name="helper_range">範囲: %1$d - %2$d %3$s</string>
+    <string name="action_save">保存</string>
+    <string name="hint_from_karoo_profile">Karooプロフィールから</string>
+    <string name="action_calibrate_from_ride">このライドからキャリブレーション</string>
+    <string name="hint_calibrate_requirement">キャリブレーションするには、ライド後に両方の体重を入力してください</string>
+    <string name="toggle_on">オン</string>
+    <string name="toggle_off">オフ</string>
+    <string name="suffix_quick_gel_default"> ・ Quick Gel のデフォルト</string>
+    <string name="cd_set_as_quick_gel_default">Quick Gel のデフォルトに設定</string>
+    <string name="pill_food">食品</string>
+    <string name="pill_drink_mix">ドリンクミックス</string>
+    <string name="placeholder_name">名前</string>
+    <string name="placeholder_carbs_g">炭水化物 g</string>
+    <string name="placeholder_fluid_ml">水分 ml</string>
+    <string name="placeholder_sodium_mg">ナトリウム mg</string>
+    <string name="placeholder_default_sip_ml">デフォルトの一口量 ml</string>
+    <string name="unit_watts_suffix">" W"</string>
+    <string name="unit_kg_suffix">" kg"</string>
+
+    <!-- Quick Log screen -->
+    <string name="toast_switched_workout">ワークアウトモードに切り替えました</string>
+    <string name="dialog_quick_carb_title">QUICK CARB</string>
+    <string name="confirm_ate_food">%1$s（%2$dg）を食べましたか？</string>
+    <string name="dialog_quick_sip_title">QUICK SIP</string>
+    <string name="confirm_drank_sip">一口（%1$dml）飲みましたか？</string>
+    <string name="dialog_quick_sodium_title">QUICK SODIUM</string>
+    <string name="confirm_took_sodium">ナトリウム（%1$dmg）を摂取しましたか？</string>
+    <string name="toast_not_running">NutriProが実行されていません</string>
+    <string name="toast_logged_full">%1$s を記録: 炭水化物 %2$dg、水分 %3$dml、ナトリウム %4$dmg</string>
+    <string name="toast_logged_food">%1$s（%2$dg）を記録しました</string>
+    <string name="template_custom_grams">カスタム %1$dg</string>
+    <string name="toast_logged_carbs">炭水化物 %1$dg を記録しました</string>
+    <string name="toast_logged_water">水分 %1$dml を記録しました</string>
+    <string name="toast_logged_sodium">ナトリウム %1$dmg を記録しました</string>
+    <string name="toast_undone">取り消しました</string>
+    <string name="toast_nothing_to_undo">取り消す内容がありません</string>
+    <string name="toast_refilled">%1$dml を補充しました</string>
+    <string name="toast_ride_mode_set">ライドモードを %1$s に設定しました</string>
+    <string name="time_just_now">たった今</string>
+    <string name="time_minutes_ago">%1$d分前</string>
+    <string name="action_undo_last_button">直前を取り消す</string>
+    <string name="dialog_custom_carbs_title">カスタム炭水化物</string>
+    <string name="dialog_log_food_title">食事を記録</string>
+    <string name="label_carbs">炭水化物</string>
+    <string name="unit_grams_label">グラム</string>
+    <string name="cd_plus5">+5</string>
+    <string name="action_back">戻る</string>
+    <string name="action_log_grams">%1$dg を記録</string>
+    <string name="hint_adds_all">炭水化物 + 水分 + ナトリウムを追加します</string>
+    <string name="stat_fluid_sodium">%1$dml ・ %2$dmg</string>
+    <string name="action_custom">カスタム</string>
+    <string name="action_cancel_caps">キャンセル</string>
+    <string name="dialog_log_water_title">水分を記録</string>
+    <string name="dialog_log_sodium_title">ナトリウムを記録</string>
+    <string name="dialog_custom_amount_title">カスタム量</string>
+    <string name="dialog_custom_refill_title">カスタム補充</string>
+    <string name="dialog_refill_bottles_title">ボトルを補充</string>
+    <string name="cd_plus_step">+%1$s</string>
+    <string name="action_log_amount">%1$s%2$s を記録</string>
+    <string name="action_confirm">確認</string>
+    <string name="confirm_refill_both">両方のボトルを補充しますか？</string>
+    <string name="action_refill_full">満タンに補充（%1$dml）</string>
+    <string name="cd_plus50">+50</string>
+    <string name="action_refill_amount">%1$dml を補充</string>
+    <string name="ridemode_casual_z2">カジュアル Z2</string>
+    <string name="ridemode_casual_sport">カジュアル スポーツ</string>
+    <string name="ridemode_workout">ワークアウト</string>
+    <string name="ridemode_race">レース</string>
+    <string name="ridemode_casual_z2_title">カジュアル ・ Z2</string>
+    <string name="ridemode_casual_z2_subtitle">リラックスした、低めの炭水化物目標</string>
+    <string name="ridemode_casual_sport_title">カジュアル ・ スポーツ（Z3-Z4）</string>
+    <string name="ridemode_casual_sport_subtitle">安定した強度、高めの目標</string>
+    <string name="ridemode_workout_subtitle">読み込んだワークアウトに従います</string>
+    <string name="ridemode_race_subtitle">全力、プレロード + 高速アラート</string>
+    <string name="duration_using_route">読み込まれたルートを使用</string>
+    <string name="duration_lt_1h">1時間未満</string>
+    <string name="duration_1_2h">1〜2時間</string>
+    <string name="duration_2_3h">2〜3時間</string>
+    <string name="duration_3_4h">3〜4時間</string>
+    <string name="duration_4h_plus">4時間以上</string>
+    <string name="step_title_ride_mode">ライドモード ・ 1/2</string>
+    <string name="step_title_ride_plan">ライドプラン ・ 2/2</string>
+
+    <!-- Glance tiles -->
+    <string name="glance_dash">-</string>
+    <string name="glance_just_now">たった今</string>
+    <string name="glance_minutes_short">%1$d分</string>
+    <string name="glance_hours_short">%1$d時間</string>
+    <string name="glance_hours_minutes_short">%1$d時間%2$d分</string>
+    <string name="glance_balance_caption">バランス</string>
+    <string name="glance_carb_balance_caption">炭水化物バランス</string>
+    <string name="glance_burned">消費</string>
+    <string name="glance_eaten">摂取</string>
+    <string name="glance_rate">レート</string>
+    <string name="glance_compact_be">消:%1$s  摂:%2$s</string>
+    <string name="glance_burn_rate">消費レート</string>
+    <string name="glance_last_eat">最後の食事</string>
+    <string name="glance_compact_e">摂: %1$s</string>
+    <string name="glance_compact_b">消: %1$s</string>
+    <string name="glance_hydration_caption">水分補給</string>
+    <string name="glance_total">合計</string>
+    <string name="glance_sips">一口の回数</string>
+    <string name="glance_last_food_caption">最後の食事</string>
+    <string name="glance_name">名前</string>
+    <string name="glance_ago">前</string>
+    <string name="glance_bal">バランス</string>
+    <string name="glance_time">時間</string>
+    <string name="glance_balance">バランス</string>
+    <string name="glance_compact_bal">バランス: %1$s</string>
+
+    <!-- Data type tiles -->
+    <string name="dt_fluid_short">水分</string>
+    <string name="dt_bottles_short">ボトル</string>
+    <string name="dt_carb_short">炭水化物</string>
+    <string name="dt_sodium_short">ナトリウム</string>
+    <string name="dt_quick_sodium_short">QUICK SODIUM</string>
+    <string name="dt_add_carb_short">炭水化物を追加</string>
+    <string name="dt_select">選択</string>
+    <string name="dt_add_sodium_short">ナトリウムを追加</string>
+    <string name="dt_add_fluid_short">水分を追加</string>
+    <string name="dt_quick_carb_short">QUICK CARB</string>
+    <string name="dt_quick_sip_short">QUICK SIP</string>
+    <string name="rideplan_using_route">ルートを使用</string>
+    <string name="rideplan_hour_plan">%1$d時間プラン</string>
+    <string name="rideplan_min_plan">%1$d分プラン</string>
+    <string name="rideplan_casual_z2">カジュアル Z2</string>
+    <string name="rideplan_sport">スポーツ</string>
+    <string name="rideplan_workout">ワークアウト</string>
+    <string name="rideplan_race">レース</string>
+    <string name="rideplan_setup">ライド設定</string>
+
+    <!-- FIT export summary -->
+    <string name="fit_ride_summary_comment">ライドの概要: 炭水化物 %1$.0fg、水分 %2$.0fml（推定発汗損失 %3$.1fL）</string>
+
+    <!-- Eat/drink/sodium alert notifications -->
+    <string name="alert_workout_detected_title">構造化されたワークアウトを検出しました - インターバルに応じた補給アラートのため、ワークアウトモードに切り替えますか？</string>
+    <string name="action_switch_workout_mode">ワークアウトモードに切り替える</string>
+    <string name="alert_race_preload_title">レースモード - 今すぐプレロード</string>
+    <string name="alert_race_preload_detail">まだの場合は、強度が上がる前に炭水化物を補給してください。</string>
+    <string name="alert_no_route_title">補給アラートは1時間後から開始します</string>
+    <string name="alert_no_route_detail">ルートまたは予定時間が設定されていません - 長時間乗る場合はルートを読み込むかライドプランを設定してください。</string>
+    <string name="composition_note"> 2種類の糖質が必要です: グルコース:フルクトース = 2:1 または 1:0.8。</string>
+    <string name="alert_eat_detail_full">推奨: 炭水化物 %1$dg。不足: %2$dg。%3$s</string>
+    <string name="notif_eat_text">食事の時間です！ %1$s</string>
+    <string name="action_log_food_grams">%1$s %2$dg を記録</string>
+    <string name="notif_drink_text">水を飲んでください！ 水分補給をしましょう — 一口飲んでください。</string>
+    <string name="action_log_sip">%1$dml の一口を記録</string>
+    <string name="alert_low_sodium_title">ナトリウム不足</string>
+    <string name="alert_low_sodium_detail">不足: %1$dmg</string>
+    <string name="notif_low_sodium_text">ナトリウムが不足しています。不足: %1$dmg。</string>
+    <string name="action_log_sodium_dose">%1$dmg の摂取を記録</string>
+    <string name="alert_climb_title">この先に登り坂あり – 今すぐ食事を</string>
+    <string name="alert_climb_detail">登り坂が始まる前に補給してください</string>
+    <string name="alert_interval_title">インターバル終了間近 - 今すぐ食事を</string>
+    <string name="alert_interval_detail">次の強度が始まる前に補給してください</string>
+    <string name="notif_bottle_low">ボトルの残りが少なくなっています — 補充を計画してください</string>
+    <string name="notif_bottles_empty">ボトルが空です。合計 %1$dml を使用しました — 補充するにはボトルのフィールドをタップしてください。</string>
+
+    <!-- FTP reminder -->
+    <string name="notif_set_ftp">正確なトラッキングのためにFTPを設定してください。NutriProの設定またはKarooプロフィールを開いてください。</string>
+    <string name="action_open_settings">設定を開く</string>
+
+    <!-- Logged entry display names -->
+    <string name="entry_water_ml">水分 %1$dml</string>
+    <string name="entry_sodium_mg">ナトリウム %1$dmg</string>
+
+    <!-- Default food template seed names -->
+    <string name="food_energy_bar">エナジーバー</string>
+    <string name="food_banana">バナナ</string>
+    <string name="food_energy_gel">エナジージェル</string>
+    <string name="label_generic_entry">記録</string>
+    <string name="label_logged_summary">%1$s · %2$s に記録</string>
+</resources>

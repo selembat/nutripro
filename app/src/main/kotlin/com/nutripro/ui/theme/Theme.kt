@@ -1,8 +1,10 @@
 package com.nutripro.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -45,7 +47,7 @@ private class NutriProPalette(
     val balance: BalanceLadder,
 )
 
-private val defaultPalette = NutriProPalette(
+private val darkPalette = NutriProPalette(
     accent = AccentPalette(base = Color(0xFF5A2073), light = Color(0xFF8B3FB0), onAccent = Color(0xFFFFFFFF)),
     surfaces = SurfacePalette(
         background = Color(0xFF000000),
@@ -76,7 +78,51 @@ private val defaultPalette = NutriProPalette(
     ),
 )
 
-private val LocalPalette = staticCompositionLocalOf { defaultPalette }
+/** Light counterpart - same brand/semantic hues, surfaces and text flipped for a light background. */
+private val lightPalette = NutriProPalette(
+    accent = AccentPalette(base = Color(0xFF5A2073), light = Color(0xFF8B3FB0), onAccent = Color(0xFFFFFFFF)),
+    surfaces = SurfacePalette(
+        background = Color(0xFFFAFAFA),
+        surface = Color(0xFFEFEFEF),
+        variant = Color(0xFFE0E0E0),
+        elevated = Color(0xFFFFFFFF),
+    ),
+    text = TextPalette(
+        onBackground = Color(0xFF111111),
+        onSurface = Color(0xFF111111),
+        onSurfaceVariant = Color(0xFF777777),
+    ),
+    semantic = SemanticPalette(
+        food = Color(0xFF16A34A),
+        foodDark = Color(0xFF15803D),
+        water = Color(0xFF2563EB),
+        waterDark = Color(0xFF1D4ED8),
+        warning = Color(0xFFB45309),
+        error = Color(0xFFDC2626),
+        errorLight = Color(0xFFEF4444),
+    ),
+    balance = BalanceLadder(
+        healthy = Color(0xFF16A34A),
+        mild = Color(0xFF15803D),
+        moderate = Color(0xFFCA8A04),
+        severe = Color(0xFFEA580C),
+        critical = Color(0xFFDC2626),
+    ),
+)
+
+private val LocalPalette = staticCompositionLocalOf { darkPalette }
+
+/**
+ * Resolves the user's Appearance setting (SYSTEM/LIGHT/DARK) to a concrete dark/light
+ * choice - SYSTEM follows the device's own Android dark-mode setting, since the karoo-ext
+ * SDK exposes no Karoo-specific theme signal of its own for extensions to read.
+ */
+@Composable
+fun rememberIsDarkTheme(themeMode: String): Boolean = when (themeMode) {
+    "LIGHT" -> false
+    "DARK" -> true
+    else -> isSystemInDarkTheme()
+}
 
 // Flat accessors so call sites can keep saying `Food`, `Water`, `Accent`, etc.
 // without caring how the palette is grouped internally.
@@ -125,24 +171,43 @@ fun Modifier.bottomRule(color: Color): Modifier = drawBehind {
 }
 
 @Composable
-fun NutriProTheme(content: @Composable () -> Unit) {
-    val palette = defaultPalette
-    val colorScheme = darkColorScheme(
-        primary = palette.accent.base,
-        onPrimary = palette.accent.onAccent,
-        primaryContainer = palette.accent.light,
-        secondary = palette.semantic.food,
-        onSecondary = Color.Black,
-        tertiary = palette.semantic.water,
-        background = palette.surfaces.background,
-        onBackground = palette.text.onBackground,
-        surface = palette.surfaces.surface,
-        onSurface = palette.text.onSurface,
-        surfaceVariant = palette.surfaces.variant,
-        onSurfaceVariant = palette.text.onSurfaceVariant,
-        error = palette.semantic.error,
-        onError = Color.White,
-    )
+fun NutriProTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+    val palette = if (darkTheme) darkPalette else lightPalette
+    val colorScheme = if (darkTheme) {
+        darkColorScheme(
+            primary = palette.accent.base,
+            onPrimary = palette.accent.onAccent,
+            primaryContainer = palette.accent.light,
+            secondary = palette.semantic.food,
+            onSecondary = Color.Black,
+            tertiary = palette.semantic.water,
+            background = palette.surfaces.background,
+            onBackground = palette.text.onBackground,
+            surface = palette.surfaces.surface,
+            onSurface = palette.text.onSurface,
+            surfaceVariant = palette.surfaces.variant,
+            onSurfaceVariant = palette.text.onSurfaceVariant,
+            error = palette.semantic.error,
+            onError = Color.White,
+        )
+    } else {
+        lightColorScheme(
+            primary = palette.accent.base,
+            onPrimary = palette.accent.onAccent,
+            primaryContainer = palette.accent.light,
+            secondary = palette.semantic.food,
+            onSecondary = Color.White,
+            tertiary = palette.semantic.water,
+            background = palette.surfaces.background,
+            onBackground = palette.text.onBackground,
+            surface = palette.surfaces.surface,
+            onSurface = palette.text.onSurface,
+            surfaceVariant = palette.surfaces.variant,
+            onSurfaceVariant = palette.text.onSurfaceVariant,
+            error = palette.semantic.error,
+            onError = Color.White,
+        )
+    }
 
     CompositionLocalProvider(LocalPalette provides palette) {
         MaterialTheme(colorScheme = colorScheme, typography = NutriProTypography, content = content)

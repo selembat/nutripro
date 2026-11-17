@@ -1,6 +1,11 @@
 package com.nutripro.glance
 
+import android.content.Context
+import android.content.res.Configuration
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.glance.LocalContext
+import com.nutripro.model.RideMode
 
 /**
  * Shared palette for the Glance widgets. Thresholds below are expressed as
@@ -13,6 +18,11 @@ object GlanceColors {
     val Frame = Color(0xFF1C1C1E)
     val Label = Color(0xFFAAAAAA)
     val Divider = Color(0xFF555555)
+
+    /** Light tile matching Karoo's own native numeric-field background. */
+    val LightTile = Color(0xFFEDEDED)
+    val OnLightTile = Color(0xFF111111)
+    val OnLightTileDim = Color(0xFF666666)
     val Food = Color(0xFF22C55E)
     val Water = Color(0xFF3B82F6)
     val WaterLight = Color(0xFFBFDBFE)
@@ -50,4 +60,37 @@ object GlanceColors {
 
     private fun thresholdColor(value: Double, vararg steps: Pair<Double, Color>, fallback: Color): Color =
         steps.firstOrNull { (ceiling, _) -> value < ceiling }?.second ?: fallback
+
+    /**
+     * Resolves the Appearance setting (SYSTEM/LIGHT/DARK) for a plain (non-balance) field.
+     * SYSTEM reads the device's own Android night-mode flag - the same mechanism
+     * `isSystemInDarkTheme()` uses on the Compose side - since karoo-ext exposes no
+     * Karoo-specific theme signal of its own, but Karoo's device theme setting rides on
+     * standard Android day/night under the hood.
+     */
+    fun isDarkTheme(themeMode: String, context: Context): Boolean = when (themeMode) {
+        "LIGHT" -> false
+        "DARK" -> true
+        else -> (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    fun fieldBackground(isDark: Boolean): Color = if (isDark) Background else LightTile
+
+    fun fieldLabelColor(isDark: Boolean): Color = if (isDark) Label else OnLightTileDim
+
+    /** Accent color for a [com.nutripro.model.RideMode] value, used by the Ride Setup field. */
+    fun rideModeAccent(mode: String): Color = when (mode) {
+        RideMode.CASUAL_Z2 -> Water
+        RideMode.CASUAL_SPORT -> Food
+        RideMode.WORKOUT -> Warning
+        RideMode.RACE -> Error
+        else -> White
+    }
+}
+
+/** (background, label) colors for a plain field, resolved from the Appearance setting. */
+@Composable
+fun rememberFieldColors(themeMode: String): Pair<Color, Color> {
+    val isDark = GlanceColors.isDarkTheme(themeMode, LocalContext.current)
+    return GlanceColors.fieldBackground(isDark) to GlanceColors.fieldLabelColor(isDark)
 }

@@ -52,13 +52,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.nutripro.BuildConfig
+import com.nutripro.R
 import com.nutripro.engine.SweatCalibrator
+import com.nutripro.model.AmountPreset
 import com.nutripro.model.FoodTemplate
 import com.nutripro.ui.theme.Accent
 import com.nutripro.ui.theme.AccentLight
@@ -69,6 +72,7 @@ import com.nutripro.ui.theme.NutriProTheme
 import com.nutripro.ui.theme.OnAccent
 import com.nutripro.ui.theme.OnSurface
 import com.nutripro.ui.theme.OnSurfaceVariant
+import com.nutripro.ui.theme.rememberIsDarkTheme
 import com.nutripro.ui.theme.Surface
 import com.nutripro.ui.theme.SurfaceElevated
 import com.nutripro.ui.theme.SurfaceVariant
@@ -83,9 +87,15 @@ class SettingsActivity : ComponentActivity() {
         preferences = Preferences(applicationContext)
 
         setContent {
-            NutriProTheme {
+            var themeMode by remember { mutableStateOf(preferences.themeMode) }
+            NutriProTheme(darkTheme = rememberIsDarkTheme(themeMode)) {
                 SettingsScreen(
                     preferences = preferences,
+                    themeMode = themeMode,
+                    onThemeModeChange = {
+                        themeMode = it
+                        preferences.themeMode = it
+                    },
                     onNavigateBack = { finish() },
                 )
             }
@@ -117,6 +127,8 @@ private fun <T> rememberPrefField(initial: T, persist: (T) -> Unit): PrefField<T
 @Composable
 fun SettingsScreen(
     preferences: Preferences,
+    themeMode: String,
+    onThemeModeChange: (String) -> Unit,
     onNavigateBack: () -> Unit,
 ) {
     val isCompact = LocalConfiguration.current.screenHeightDp.dp < 420.dp
@@ -131,9 +143,13 @@ fun SettingsScreen(
                 .padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 12.dp),
             verticalArrangement = Arrangement.spacedBy(if (isCompact) 12.dp else 16.dp),
         ) {
+            AppearanceSection(themeMode, onThemeModeChange, isCompact)
             ProfileSection(preferences, isCompact)
             FoodTemplatesSection(preferences, isCompact)
+            FluidPresetsSection(preferences, isCompact)
+            SodiumPresetsSection(preferences, isCompact)
             FuelingSection(preferences, isCompact)
+            AlertsSection(preferences, isCompact)
             OptionsSection(preferences, isCompact)
             TestingSection(preferences, isCompact)
             SweatCalibrationSection(preferences, isCompact)
@@ -155,13 +171,13 @@ private fun SettingsHeader(onNavigateBack: () -> Unit, isCompact: Boolean) {
         IconButton(onClick = onNavigateBack, modifier = Modifier.size(32.dp)) {
             Icon(
                 Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.cd_back),
                 tint = OnAccent,
                 modifier = Modifier.size(18.dp),
             )
         }
         Text(
-            text = "NUTRIPRO SETTINGS",
+            text = stringResource(R.string.settings_screen_title),
             fontSize = 14.sp,
             fontWeight = FontWeight.Black,
             color = OnAccent,
@@ -171,13 +187,47 @@ private fun SettingsHeader(onNavigateBack: () -> Unit, isCompact: Boolean) {
 }
 
 @Composable
+private fun AppearanceSection(themeMode: String, onThemeModeChange: (String) -> Unit, isCompact: Boolean) {
+    SettingsSection(title = stringResource(R.string.section_appearance)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = if (isCompact) 10.dp else 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            listOf(
+                "SYSTEM" to stringResource(R.string.theme_system),
+                "LIGHT" to stringResource(R.string.theme_light),
+                "DARK" to stringResource(R.string.theme_dark),
+            ).forEach { (value, label) ->
+                val selected = themeMode == value
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (selected) Accent else SurfaceVariant)
+                        .clickable { onThemeModeChange(value) }
+                        .padding(vertical = if (isCompact) 8.dp else 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = label.uppercase(),
+                        fontSize = if (isCompact) 10.sp else 11.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (selected) Color.White else OnSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun ProfileSection(preferences: Preferences, isCompact: Boolean) {
     val ftp = rememberPrefField(preferences.ftpOverride) { preferences.ftpOverride = it }
     val weight = rememberPrefField(preferences.weightOverride) { preferences.weightOverride = it }
 
-    SettingsSection(title = "PROFILE") {
+    SettingsSection(title = stringResource(R.string.section_profile)) {
         SourceToggleRow(
-            label = "FTP",
+            label = stringResource(R.string.label_ftp),
             isCustom = ftp.value > 0,
             onSelectProfile = { ftp.set(0) },
             onSelectCustom = { if (ftp.value <= 0) ftp.set(200) },
@@ -187,7 +237,7 @@ private fun ProfileSection(preferences: Preferences, isCompact: Boolean) {
         FtpRow(value = ftp.value, onUpdate = ftp::set, isCompact = isCompact)
         CardDivider()
         SourceToggleRow(
-            label = "Weight",
+            label = stringResource(R.string.label_weight),
             isCustom = weight.value > 0f,
             onSelectProfile = { weight.set(0f) },
             onSelectCustom = { if (weight.value <= 0f) weight.set(70f) },
@@ -213,24 +263,24 @@ private fun SourceToggleRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "$label source",
+            text = stringResource(R.string.source_row_label, label),
             fontSize = if (isCompact) 11.sp else 12.sp,
             color = OnSurfaceVariant,
             modifier = Modifier.weight(1f),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            SourcePill(text = "Karoo", selected = !isCustom, onClick = onSelectProfile, isCompact = isCompact)
-            SourcePill(text = "Custom", selected = isCustom, onClick = onSelectCustom, isCompact = isCompact)
+            SourcePill(text = stringResource(R.string.source_karoo), selected = !isCustom, onClick = onSelectProfile, isCompact = isCompact)
+            SourcePill(text = stringResource(R.string.source_custom), selected = isCustom, onClick = onSelectCustom, isCompact = isCompact)
         }
     }
 }
 
 @Composable
-private fun SourcePill(text: String, selected: Boolean, onClick: () -> Unit, isCompact: Boolean) {
+private fun SourcePill(text: String, selected: Boolean, onClick: () -> Unit, isCompact: Boolean, selectedColor: Color = Accent) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(if (selected) Accent else SurfaceVariant)
+            .background(if (selected) selectedColor else SurfaceVariant)
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center,
@@ -246,6 +296,7 @@ private fun SourcePill(text: String, selected: Boolean, onClick: () -> Unit, isC
 
 @Composable
 private fun SweatCalibrationSection(preferences: Preferences, isCompact: Boolean) {
+    val context = LocalContext.current
     val preRideWeight = rememberPrefField(preferences.preRideWeightKg) { preferences.preRideWeightKg = it }
     val postRideWeight = rememberPrefField(preferences.postRideWeightKg) { preferences.postRideWeightKg = it }
     var sweatMultiplier by remember { mutableStateOf(preferences.sweatMultiplier) }
@@ -255,12 +306,12 @@ private fun SweatCalibrationSection(preferences: Preferences, isCompact: Boolean
         postRideWeight.value > 0f &&
         preferences.lastRideSweatLossMl > 0f
 
-    SettingsSection(title = "SWEAT CALIBRATION") {
-        WeighInRow(label = "Pre-ride weight", value = preRideWeight.value, onUpdate = preRideWeight::set, isCompact = isCompact)
+    SettingsSection(title = stringResource(R.string.section_sweat_calibration)) {
+        WeighInRow(label = stringResource(R.string.label_pre_ride_weight), value = preRideWeight.value, onUpdate = preRideWeight::set, isCompact = isCompact)
         CardDivider()
-        WeighInRow(label = "Post-ride weight", value = postRideWeight.value, onUpdate = postRideWeight::set, isCompact = isCompact)
+        WeighInRow(label = stringResource(R.string.label_post_ride_weight), value = postRideWeight.value, onUpdate = postRideWeight::set, isCompact = isCompact)
         CardDivider()
-        SettingsRow(label = "Current multiplier", trailingText = "%.2f×".format(sweatMultiplier), isCompact = isCompact)
+        SettingsRow(label = stringResource(R.string.label_current_multiplier), trailingText = "%.2f×".format(sweatMultiplier), isCompact = isCompact)
         CardDivider()
         CalibrateRow(
             enabled = readyToCalibrate,
@@ -282,7 +333,7 @@ private fun SweatCalibrationSection(preferences: Preferences, isCompact: Boolean
                 sweatMultiplier = newMultiplier
                 preRideWeight.set(0f)
                 postRideWeight.set(0f)
-                calibrationMessage = "Updated to %.2f× (measured %.0fml lost)".format(newMultiplier, actualLossMl)
+                calibrationMessage = context.getString(R.string.calibration_message, newMultiplier, actualLossMl)
             },
         )
     }
@@ -292,19 +343,27 @@ private fun SweatCalibrationSection(preferences: Preferences, isCompact: Boolean
 private fun FoodTemplatesSection(preferences: Preferences, isCompact: Boolean) {
     val templates = remember { mutableStateListOf(*preferences.loadFoodTemplates().toTypedArray()) }
     var isAdding by remember { mutableStateOf(false) }
+    var isDrinkMix by remember { mutableStateOf(false) }
     var draftName by remember { mutableStateOf("") }
     var draftCarbs by remember { mutableStateOf("") }
     var draftEmoji by remember { mutableStateOf("") }
+    var draftFluidMl by remember { mutableStateOf("") }
+    var draftSodiumMg by remember { mutableStateOf("") }
+    var draftSipMl by remember { mutableStateOf("") }
 
     fun persist() = preferences.saveFoodTemplates(templates.toList())
     fun resetDraft() {
         isAdding = false
+        isDrinkMix = false
         draftName = ""
         draftCarbs = ""
         draftEmoji = ""
+        draftFluidMl = ""
+        draftSodiumMg = ""
+        draftSipMl = ""
     }
 
-    SettingsSection(title = "FOOD TEMPLATES") {
+    SettingsSection(title = stringResource(R.string.section_food_templates)) {
         templates.forEachIndexed { index, template ->
             if (index > 0) CardDivider()
             TemplateRow(
@@ -314,7 +373,11 @@ private fun FoodTemplatesSection(preferences: Preferences, isCompact: Boolean) {
                     persist()
                 },
                 onDelete = {
+                    val wasDefault = templates[index].isDefault
                     templates.removeAt(index)
+                    if (wasDefault && templates.isNotEmpty() && templates.none { it.isDefault }) {
+                        templates[0] = templates[0].copy(isDefault = true)
+                    }
                     persist()
                 },
                 isCompact = isCompact,
@@ -325,16 +388,38 @@ private fun FoodTemplatesSection(preferences: Preferences, isCompact: Boolean) {
 
         if (isAdding) {
             AddTemplateRow(
+                isDrinkMix = isDrinkMix,
+                onTypeChange = { isDrinkMix = it },
                 name = draftName,
                 carbs = draftCarbs,
                 emoji = draftEmoji,
+                fluidMl = draftFluidMl,
+                sodiumMg = draftSodiumMg,
+                sipMl = draftSipMl,
                 onNameChange = { draftName = it },
                 onCarbsChange = { draftCarbs = it.filter(Char::isDigit) },
                 onEmojiChange = { draftEmoji = it },
+                onFluidMlChange = { draftFluidMl = it.filter(Char::isDigit) },
+                onSodiumMgChange = { draftSodiumMg = it.filter(Char::isDigit) },
+                onSipMlChange = { draftSipMl = it.filter(Char::isDigit) },
                 onAdd = {
                     val carbsGrams = draftCarbs.toIntOrNull()
-                    if (draftName.isNotBlank() && carbsGrams != null && carbsGrams > 0) {
-                        templates.add(FoodTemplate(name = draftName.trim(), carbsGrams = carbsGrams, emoji = draftEmoji.trim()))
+                    val fluidMl = draftFluidMl.toIntOrNull() ?: 0
+                    val sodiumMg = draftSodiumMg.toIntOrNull() ?: 0
+                    val sipMl = draftSipMl.toIntOrNull() ?: 0
+                    val valid = draftName.isNotBlank() && carbsGrams != null && carbsGrams > 0 &&
+                        (!isDrinkMix || (fluidMl > 0 && sipMl > 0))
+                    if (valid) {
+                        templates.add(
+                            FoodTemplate(
+                                name = draftName.trim(),
+                                carbsGrams = carbsGrams!!,
+                                emoji = draftEmoji.trim(),
+                                fluidMl = if (isDrinkMix) fluidMl else 0,
+                                sodiumMg = if (isDrinkMix) sodiumMg else 0,
+                                sipMl = if (isDrinkMix) sipMl else 0,
+                            ),
+                        )
                         persist()
                         resetDraft()
                     }
@@ -345,6 +430,187 @@ private fun FoodTemplatesSection(preferences: Preferences, isCompact: Boolean) {
         } else {
             AddTemplateButton(onClick = { isAdding = true }, isCompact = isCompact)
         }
+    }
+}
+
+@Composable
+private fun AmountPresetsSection(
+    title: String,
+    presets: List<AmountPreset>,
+    unit: String,
+    color: Color,
+    onSave: (List<AmountPreset>) -> Unit,
+    isCompact: Boolean,
+) {
+    val items = remember(presets) { mutableStateListOf(*presets.toTypedArray()) }
+    var isAdding by remember { mutableStateOf(false) }
+    var draftAmount by remember { mutableStateOf("") }
+
+    fun persist() = onSave(items.toList())
+
+    SettingsSection(title = title) {
+        items.forEachIndexed { index, preset ->
+            if (index > 0) CardDivider()
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    if (preset.isDefault) Icons.Default.Star else Icons.Outlined.Star,
+                    contentDescription = null,
+                    tint = if (preset.isDefault) color else SurfaceVariant,
+                    modifier = Modifier.size(if (isCompact) 14.dp else 16.dp),
+                )
+                Column(modifier = Modifier.weight(1f).padding(start = 10.dp)) {
+                    Text(
+                        text = "${preset.amount} $unit",
+                        fontSize = if (isCompact) 12.sp else 13.sp,
+                        fontWeight = if (preset.isDefault) FontWeight.Bold else FontWeight.Medium,
+                        color = OnSurface,
+                    )
+                    if (preset.isDefault) {
+                        Text(text = stringResource(R.string.badge_default), fontSize = if (isCompact) 9.sp else 10.sp, color = color)
+                    }
+                }
+                if (!preset.isDefault) {
+                    Icon(
+                        Icons.Outlined.Star,
+                        contentDescription = stringResource(R.string.cd_set_as_default),
+                        tint = OnSurfaceVariant,
+                        modifier = Modifier
+                            .size(if (isCompact) 22.dp else 24.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable {
+                                items.indices.forEach { i -> items[i] = items[i].copy(isDefault = i == index) }
+                                persist()
+                            }
+                            .padding(2.dp),
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                }
+                Box(
+                    modifier = Modifier
+                        .size(if (isCompact) 28.dp else 32.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Error.copy(alpha = 0.15f))
+                        .clickable {
+                            val wasDefault = items[index].isDefault
+                            items.removeAt(index)
+                            if (wasDefault && items.isNotEmpty() && items.none { it.isDefault }) {
+                                items[0] = items[0].copy(isDefault = true)
+                            }
+                            persist()
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.cd_delete), tint = Error, modifier = Modifier.size(14.dp))
+                }
+            }
+        }
+
+        if (items.isNotEmpty()) CardDivider()
+
+        if (isAdding) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier.weight(1f).clip(RoundedCornerShape(6.dp)).background(SurfaceVariant)
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                ) {
+                    BasicTextField(
+                        value = draftAmount,
+                        onValueChange = { draftAmount = it.filter(Char::isDigit) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 13.sp, color = OnSurface),
+                        cursorBrush = SolidColor(color),
+                        decorationBox = { inner ->
+                            Box {
+                                if (draftAmount.isEmpty()) Text(stringResource(R.string.placeholder_amount_unit, unit), fontSize = 13.sp, color = OnSurfaceVariant)
+                                inner()
+                            }
+                        },
+                    )
+                }
+                Box(
+                    modifier = Modifier.height(32.dp).clip(RoundedCornerShape(6.dp)).background(SurfaceVariant)
+                        .clickable { isAdding = false; draftAmount = "" }.padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) { Text(stringResource(R.string.action_cancel), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = OnSurfaceVariant) }
+                val amount = draftAmount.toIntOrNull()
+                val canAdd = amount != null && amount > 0
+                Box(
+                    modifier = Modifier.height(32.dp).clip(RoundedCornerShape(6.dp)).background(if (canAdd) color else SurfaceVariant)
+                        .clickable(enabled = canAdd) {
+                            items.add(AmountPreset(amount!!))
+                            persist()
+                            isAdding = false
+                            draftAmount = ""
+                        }.padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) { Text(stringResource(R.string.action_add), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (canAdd) Color.Black else OnSurfaceVariant) }
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(color.copy(alpha = 0.1f))
+                    .clickable(onClick = { isAdding = true })
+                    .padding(horizontal = 12.dp, vertical = if (isCompact) 10.dp else 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, tint = color, modifier = Modifier.size(14.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(text = stringResource(R.string.action_add_preset), fontSize = if (isCompact) 11.sp else 12.sp, fontWeight = FontWeight.Bold, color = color)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FluidPresetsSection(preferences: Preferences, isCompact: Boolean) {
+    AmountPresetsSection(
+        title = stringResource(R.string.section_fluid_presets),
+        presets = remember { preferences.loadFluidPresets() },
+        unit = "ml",
+        color = Water,
+        onSave = preferences::saveFluidPresets,
+        isCompact = isCompact,
+    )
+}
+
+@Composable
+private fun SodiumPresetsSection(preferences: Preferences, isCompact: Boolean) {
+    AmountPresetsSection(
+        title = stringResource(R.string.section_sodium_presets),
+        presets = remember { preferences.loadSodiumPresets() },
+        unit = "mg",
+        color = Accent,
+        onSave = preferences::saveSodiumPresets,
+        isCompact = isCompact,
+    )
+}
+
+@Composable
+private fun AlertsSection(preferences: Preferences, isCompact: Boolean) {
+    val carbAlerts = rememberPrefField(preferences.carbAlertsEnabled) { preferences.carbAlertsEnabled = it }
+    val fluidAlerts = rememberPrefField(preferences.fluidAlertsEnabled) { preferences.fluidAlertsEnabled = it }
+    val sodiumAlerts = rememberPrefField(preferences.sodiumAlertsEnabled) { preferences.sodiumAlertsEnabled = it }
+    val soundEnabled = rememberPrefField(preferences.soundEnabled) { preferences.soundEnabled = it }
+
+    SettingsSection(title = stringResource(R.string.section_alerts)) {
+        ToggleRow(label = stringResource(R.string.label_carb_alerts), checked = carbAlerts.value, activeColor = Food, onToggle = carbAlerts::set, isCompact = isCompact)
+        CardDivider()
+        ToggleRow(label = stringResource(R.string.label_fluid_alerts), checked = fluidAlerts.value, activeColor = Water, onToggle = fluidAlerts::set, isCompact = isCompact)
+        CardDivider()
+        ToggleRow(label = stringResource(R.string.label_sodium_alerts), checked = sodiumAlerts.value, activeColor = Accent, onToggle = sodiumAlerts::set, isCompact = isCompact)
+        CardDivider()
+        ToggleRow(label = stringResource(R.string.label_sound), checked = soundEnabled.value, activeColor = Accent, onToggle = soundEnabled::set, isCompact = isCompact)
     }
 }
 
@@ -362,7 +628,7 @@ private fun AddTemplateButton(onClick: () -> Unit, isCompact: Boolean) {
     ) {
         Icon(Icons.Default.Add, contentDescription = null, tint = Food, modifier = Modifier.size(14.dp))
         Spacer(modifier = Modifier.width(6.dp))
-        Text(text = "Add Template", fontSize = if (isCompact) 11.sp else 12.sp, fontWeight = FontWeight.Bold, color = Food)
+        Text(text = stringResource(R.string.action_add_template), fontSize = if (isCompact) 11.sp else 12.sp, fontWeight = FontWeight.Bold, color = Food)
     }
 }
 
@@ -388,15 +654,15 @@ private fun FuelingSection(preferences: Preferences, isCompact: Boolean) {
     val weatherEnabled = rememberPrefField(preferences.weatherEnabled) { preferences.weatherEnabled = it }
 
     val steppedSettings = listOf(
-        SteppedSetting("Serving size", servingGrams.value, "g", Food, 5, 10..60, servingGrams::set),
-        SteppedSetting("Sip size", sipBlockMl.value, "ml", Water, 25, 50..300, sipBlockMl::set),
-        SteppedSetting("Quick Sip amount", sipAmountMl.value, "ml", Water, 25, 25..500, sipAmountMl::set),
-        SteppedSetting("Bottle count", bottleCount.value, "x", Water, 1, 1..4, bottleCount::set),
-        SteppedSetting("Bottle size", bottleVolumeMl.value, "ml", Water, 250, 250..1500, bottleVolumeMl::set),
-        SteppedSetting("First alert after", reminderStart.value, "min", OnSurfaceVariant, 5, 10..60, reminderStart::set),
+        SteppedSetting(stringResource(R.string.label_serving_size), servingGrams.value, "g", Food, 5, 10..60, servingGrams::set),
+        SteppedSetting(stringResource(R.string.label_sip_size), sipBlockMl.value, "ml", Water, 25, 50..300, sipBlockMl::set),
+        SteppedSetting(stringResource(R.string.label_quick_sip_amount), sipAmountMl.value, "ml", Water, 25, 25..500, sipAmountMl::set),
+        SteppedSetting(stringResource(R.string.label_bottle_count), bottleCount.value, "x", Water, 1, 1..4, bottleCount::set),
+        SteppedSetting(stringResource(R.string.label_bottle_size), bottleVolumeMl.value, "ml", Water, 250, 250..1500, bottleVolumeMl::set),
+        SteppedSetting(stringResource(R.string.label_first_alert_after), reminderStart.value, "min", OnSurfaceVariant, 5, 10..60, reminderStart::set),
     )
 
-    SettingsSection(title = "FUELING") {
+    SettingsSection(title = stringResource(R.string.section_fueling)) {
         steppedSettings.forEachIndexed { index, setting ->
             if (index > 0) CardDivider()
             CompactValueRow(
@@ -410,10 +676,10 @@ private fun FuelingSection(preferences: Preferences, isCompact: Boolean) {
             )
         }
         CardDivider()
-        ToggleRow(label = "Weather temperature", checked = weatherEnabled.value, activeColor = Water, onToggle = weatherEnabled::set, isCompact = isCompact)
+        ToggleRow(label = stringResource(R.string.label_weather_temperature), checked = weatherEnabled.value, activeColor = Water, onToggle = weatherEnabled::set, isCompact = isCompact)
         CardDivider()
         CompactValueRow(
-            label = if (weatherEnabled.value) "Manual temp (fallback)" else "Manual temperature",
+            label = if (weatherEnabled.value) stringResource(R.string.label_manual_temp_fallback) else stringResource(R.string.label_manual_temperature),
             value = manualTempC.value,
             unit = "°C",
             color = OnSurfaceVariant,
@@ -426,13 +692,10 @@ private fun FuelingSection(preferences: Preferences, isCompact: Boolean) {
 
 @Composable
 private fun OptionsSection(preferences: Preferences, isCompact: Boolean) {
-    val soundEnabled = rememberPrefField(preferences.soundEnabled) { preferences.soundEnabled = it }
     val fitExport = rememberPrefField(preferences.fitExportEnabled) { preferences.fitExportEnabled = it }
 
-    SettingsSection(title = "OPTIONS") {
-        ToggleRow(label = "Sound alerts", checked = soundEnabled.value, activeColor = Accent, onToggle = soundEnabled::set, isCompact = isCompact)
-        CardDivider()
-        ToggleRow(label = "FIT export", checked = fitExport.value, activeColor = Accent, onToggle = fitExport::set, isCompact = isCompact)
+    SettingsSection(title = stringResource(R.string.section_options)) {
+        ToggleRow(label = stringResource(R.string.settings_fit_export), checked = fitExport.value, activeColor = Accent, onToggle = fitExport::set, isCompact = isCompact)
     }
 }
 
@@ -442,11 +705,11 @@ private fun TestingSection(preferences: Preferences, isCompact: Boolean) {
     val simulatedPower = rememberPrefField(preferences.simulatedPowerWatts.toInt()) { preferences.simulatedPowerWatts = it.toFloat() }
     val simulatedHeartRate = rememberPrefField(preferences.simulatedHeartRateBpm) { preferences.simulatedHeartRateBpm = it }
 
-    SettingsSection(title = "TESTING") {
-        ToggleRow(label = "Simulation mode", checked = simulationEnabled.value, activeColor = Error, onToggle = simulationEnabled::set, isCompact = isCompact)
+    SettingsSection(title = stringResource(R.string.section_testing)) {
+        ToggleRow(label = stringResource(R.string.label_simulation_mode), checked = simulationEnabled.value, activeColor = Error, onToggle = simulationEnabled::set, isCompact = isCompact)
         CardDivider()
         CompactValueRow(
-            label = "Simulated power",
+            label = stringResource(R.string.label_simulated_power),
             value = simulatedPower.value,
             unit = "W",
             color = Accent,
@@ -456,7 +719,7 @@ private fun TestingSection(preferences: Preferences, isCompact: Boolean) {
         )
         CardDivider()
         CompactValueRow(
-            label = "Simulated heart rate",
+            label = stringResource(R.string.label_simulated_heart_rate),
             value = simulatedHeartRate.value,
             unit = "bpm",
             color = Accent,
@@ -467,7 +730,7 @@ private fun TestingSection(preferences: Preferences, isCompact: Boolean) {
         if (simulationEnabled.value) {
             Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 10.dp)) {
                 Text(
-                    text = "Using simulated power/HR instead of real sensors — turn off before a real ride.",
+                    text = stringResource(R.string.warning_simulation_mode),
                     fontSize = if (isCompact) 9.sp else 10.sp,
                     color = Error,
                 )
@@ -511,12 +774,12 @@ private const val PRIVACY_POLICY_URL = "https://nutripro-landing.ykan.workers.de
 private fun AboutSection(isCompact: Boolean) {
     val context = LocalContext.current
 
-    SettingsSection(title = "ABOUT") {
+    SettingsSection(title = stringResource(R.string.section_about)) {
         val rows = listOf<@Composable () -> Unit>(
-            { SettingsRow(label = "Version", trailingText = BuildConfig.VERSION_NAME, isCompact = isCompact) },
+            { SettingsRow(label = stringResource(R.string.label_version), trailingText = BuildConfig.VERSION_NAME, isCompact = isCompact) },
             {
                 SettingsRow(
-                    label = "GitHub",
+                    label = stringResource(R.string.label_github),
                     trailingText = PROJECT_REPO_LABEL,
                     isCompact = isCompact,
                     onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PROJECT_REPO_URL))) },
@@ -524,7 +787,7 @@ private fun AboutSection(isCompact: Boolean) {
             },
             {
                 SettingsRow(
-                    label = "Contact",
+                    label = stringResource(R.string.label_contact),
                     trailingText = CONTACT_EMAIL,
                     isCompact = isCompact,
                     onClick = {
@@ -534,12 +797,12 @@ private fun AboutSection(isCompact: Boolean) {
             },
             {
                 SettingsRow(
-                    label = "Privacy Policy",
+                    label = stringResource(R.string.label_privacy_policy),
                     isCompact = isCompact,
                     onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(PRIVACY_POLICY_URL))) },
                 )
             },
-            { SettingsRow(label = "License", trailingText = "MIT", isCompact = isCompact) },
+            { SettingsRow(label = stringResource(R.string.label_license), trailingText = stringResource(R.string.value_license_mit), isCompact = isCompact) },
         )
         rows.forEachIndexed { index, row ->
             if (index > 0) CardDivider()
@@ -688,7 +951,7 @@ private fun NumericInputDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Range: $minValue - $maxValue $unit",
+                    text = stringResource(R.string.helper_range, minValue, maxValue, unit),
                     fontSize = 12.sp,
                     color = if (isValid) OnSurfaceVariant else Error,
                 )
@@ -704,7 +967,7 @@ private fun NumericInputDialog(
                     .padding(horizontal = 8.dp),
             ) {
                 Text(
-                    text = "SAVE",
+                    text = stringResource(R.string.action_save),
                     color = if (isValid) Color.White else OnSurfaceVariant,
                     fontWeight = FontWeight.Bold,
                 )
@@ -713,7 +976,7 @@ private fun NumericInputDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = "Cancel",
+                    text = stringResource(R.string.action_cancel),
                     color = OnSurfaceVariant,
                     fontWeight = FontWeight.Medium,
                 )
@@ -744,14 +1007,14 @@ private fun FtpRow(
     ) {
         Column {
             Text(
-                text = "FTP",
+                text = stringResource(R.string.label_ftp),
                 fontSize = if (isCompact) 12.sp else 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = OnSurface,
             )
             if (value == 0) {
                 Text(
-                    text = "From Karoo profile",
+                    text = stringResource(R.string.hint_from_karoo_profile),
                     fontSize = if (isCompact) 9.sp else 10.sp,
                     color = OnSurfaceVariant,
                 )
@@ -766,7 +1029,7 @@ private fun FtpRow(
                 color = Accent,
             )
             Text(
-                text = " W",
+                text = stringResource(R.string.unit_watts_suffix),
                 fontSize = if (isCompact) 12.sp else 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Accent.copy(alpha = 0.6f),
@@ -784,7 +1047,7 @@ private fun FtpRow(
 
     if (showDialog) {
         NumericInputDialog(
-            title = "FTP",
+            title = stringResource(R.string.label_ftp),
             currentValue = if (value > 0) value.toString() else "",
             unit = "W",
             accentColor = Accent,
@@ -817,14 +1080,14 @@ private fun WeightRow(
     ) {
         Column {
             Text(
-                text = "Weight",
+                text = stringResource(R.string.label_weight),
                 fontSize = if (isCompact) 12.sp else 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = OnSurface,
             )
             if (value == 0f) {
                 Text(
-                    text = "From Karoo profile",
+                    text = stringResource(R.string.hint_from_karoo_profile),
                     fontSize = if (isCompact) 9.sp else 10.sp,
                     color = OnSurfaceVariant,
                 )
@@ -839,7 +1102,7 @@ private fun WeightRow(
                 color = AccentLight,
             )
             Text(
-                text = " kg",
+                text = stringResource(R.string.unit_kg_suffix),
                 fontSize = if (isCompact) 11.sp else 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = AccentLight.copy(alpha = 0.6f),
@@ -857,7 +1120,7 @@ private fun WeightRow(
 
     if (showDialog) {
         NumericInputDialog(
-            title = "Weight",
+            title = stringResource(R.string.label_weight),
             currentValue = if (value > 0f) value.toInt().toString() else "",
             unit = "kg",
             accentColor = AccentLight,
@@ -904,7 +1167,7 @@ private fun WeighInRow(
                 color = Water,
             )
             Text(
-                text = " kg",
+                text = stringResource(R.string.unit_kg_suffix),
                 fontSize = if (isCompact) 11.sp else 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = Water.copy(alpha = 0.6f),
@@ -959,7 +1222,7 @@ private fun CalibrateRow(
             horizontalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "Calibrate from this ride",
+                text = stringResource(R.string.action_calibrate_from_ride),
                 fontSize = if (isCompact) 11.sp else 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = if (enabled) Water else OnSurfaceVariant,
@@ -967,7 +1230,7 @@ private fun CalibrateRow(
         }
         if (!enabled) {
             Text(
-                text = "Enter both weigh-ins after a ride to calibrate",
+                text = stringResource(R.string.hint_calibrate_requirement),
                 fontSize = if (isCompact) 9.sp else 10.sp,
                 color = OnSurfaceVariant,
                 modifier = Modifier.padding(top = 6.dp),
@@ -1099,7 +1362,7 @@ private fun ToggleRow(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = if (checked) "ON" else "OFF",
+                text = if (checked) stringResource(R.string.toggle_on) else stringResource(R.string.toggle_off),
                 fontSize = if (isCompact) 10.sp else 11.sp,
                 fontWeight = FontWeight.Black,
                 color = if (checked) Color.White else OnSurfaceVariant,
@@ -1141,7 +1404,7 @@ private fun TemplateRow(
                 maxLines = 1,
             )
             Text(
-                text = "${template.carbsGrams}g${if (template.isDefault) " · Quick Gel default" else ""}",
+                text = "${template.carbsGrams}g${if (template.isDefault) stringResource(R.string.suffix_quick_gel_default) else ""}",
                 fontSize = if (isCompact) 10.sp else 11.sp,
                 color = if (template.isDefault) Food else OnSurfaceVariant,
             )
@@ -1150,7 +1413,7 @@ private fun TemplateRow(
         if (!template.isDefault) {
             Icon(
                 Icons.Outlined.Star,
-                contentDescription = "Set as Quick Gel default",
+                contentDescription = stringResource(R.string.cd_set_as_quick_gel_default),
                 tint = OnSurfaceVariant,
                 modifier = Modifier
                     .size(if (isCompact) 22.dp else 24.dp)
@@ -1171,7 +1434,7 @@ private fun TemplateRow(
         ) {
             Icon(
                 Icons.Default.Delete,
-                contentDescription = "Delete",
+                contentDescription = stringResource(R.string.cd_delete),
                 tint = Error,
                 modifier = Modifier.size(14.dp),
             )
@@ -1180,13 +1443,43 @@ private fun TemplateRow(
 }
 
 @Composable
+private fun DraftAmountField(value: String, placeholder: String, color: Color, modifier: Modifier = Modifier, onChange: (String) -> Unit) {
+    Box(
+        modifier = modifier.clip(RoundedCornerShape(6.dp)).background(SurfaceVariant).padding(horizontal = 10.dp, vertical = 8.dp),
+    ) {
+        BasicTextField(
+            value = value,
+            onValueChange = onChange,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            textStyle = LocalTextStyle.current.copy(fontSize = 12.sp, color = OnSurface),
+            cursorBrush = SolidColor(color),
+            decorationBox = { inner ->
+                Box {
+                    if (value.isEmpty()) Text(placeholder, fontSize = 12.sp, color = OnSurfaceVariant)
+                    inner()
+                }
+            },
+        )
+    }
+}
+
+@Composable
 private fun AddTemplateRow(
+    isDrinkMix: Boolean,
+    onTypeChange: (Boolean) -> Unit,
     name: String,
     carbs: String,
     emoji: String,
+    fluidMl: String,
+    sodiumMg: String,
+    sipMl: String,
     onNameChange: (String) -> Unit,
     onCarbsChange: (String) -> Unit,
     onEmojiChange: (String) -> Unit,
+    onFluidMlChange: (String) -> Unit,
+    onSodiumMgChange: (String) -> Unit,
+    onSipMlChange: (String) -> Unit,
     onAdd: () -> Unit,
     onCancel: () -> Unit,
     isCompact: Boolean,
@@ -1200,6 +1493,12 @@ private fun AddTemplateRow(
             .padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(SurfaceVariant),
+        ) {
+            SourcePill(text = stringResource(R.string.pill_food), selected = !isDrinkMix, onClick = { onTypeChange(false) }, isCompact = isCompact, selectedColor = Food)
+            SourcePill(text = stringResource(R.string.pill_drink_mix), selected = isDrinkMix, onClick = { onTypeChange(true) }, isCompact = isCompact, selectedColor = Water)
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1256,7 +1555,7 @@ private fun AddTemplateRow(
                     decorationBox = { innerTextField ->
                         Box {
                             if (name.isEmpty()) {
-                                Text("Name", fontSize = fontSize, color = OnSurfaceVariant)
+                                Text(stringResource(R.string.placeholder_name), fontSize = fontSize, color = OnSurfaceVariant)
                             }
                             innerTextField()
                         }
@@ -1283,13 +1582,23 @@ private fun AddTemplateRow(
                     decorationBox = { innerTextField ->
                         Box {
                             if (carbs.isEmpty()) {
-                                Text("Carbs g", fontSize = fontSize, color = OnSurfaceVariant)
+                                Text(stringResource(R.string.placeholder_carbs_g), fontSize = fontSize, color = OnSurfaceVariant)
                             }
                             innerTextField()
                         }
                     },
                 )
             }
+        }
+        if (isDrinkMix) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                DraftAmountField(value = fluidMl, placeholder = stringResource(R.string.placeholder_fluid_ml), color = Water, modifier = Modifier.weight(1f), onChange = onFluidMlChange)
+                DraftAmountField(value = sodiumMg, placeholder = stringResource(R.string.placeholder_sodium_mg), color = Accent, modifier = Modifier.weight(1f), onChange = onSodiumMgChange)
+            }
+            DraftAmountField(value = sipMl, placeholder = stringResource(R.string.placeholder_default_sip_ml), color = Water, modifier = Modifier.fillMaxWidth(), onChange = onSipMlChange)
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(
@@ -1302,13 +1611,14 @@ private fun AddTemplateRow(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Cancel",
+                    text = stringResource(R.string.action_cancel),
                     fontSize = if (isCompact) 11.sp else 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = OnSurfaceVariant,
                 )
             }
-            val canAdd = name.isNotBlank() && (carbs.toIntOrNull() ?: 0) > 0
+            val canAdd = name.isNotBlank() && (carbs.toIntOrNull() ?: 0) > 0 &&
+                (!isDrinkMix || ((fluidMl.toIntOrNull() ?: 0) > 0 && (sipMl.toIntOrNull() ?: 0) > 0))
             Box(
                 modifier = Modifier
                     .height(if (isCompact) 32.dp else 36.dp)
@@ -1319,7 +1629,7 @@ private fun AddTemplateRow(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Add",
+                    text = stringResource(R.string.action_add),
                     fontSize = if (isCompact) 11.sp else 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (canAdd) Color.Black else OnSurfaceVariant,

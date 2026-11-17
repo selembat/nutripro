@@ -95,4 +95,19 @@ class CarbDebtEngineTest {
         engine.tick(dtSec = 5 * 60.0, intensityPercent = 110.0, planSec = 4 * 3600L)
         assertEquals(90.0 / 12.0, engine.debtGrams, 0.001)
     }
+
+    @Test
+    fun `a confirmed ride mode accrues debt at the intensity target even on a short plan`() {
+        val engine = CarbDebtEngine()
+        // Would otherwise be zeroed by DurationGate for a 20-minute plan.
+        engine.tick(dtSec = 3600.0, intensityPercent = 110.0, planSec = 20 * 60L, modeConfirmed = true)
+        assertEquals(90.0, engine.debtGrams, 0.001)
+    }
+
+    @Test
+    fun `race mode raises the top band's ceiling above the default 90g per hour`() {
+        val engine = CarbDebtEngine()
+        engine.tick(dtSec = 3600.0, intensityPercent = 110.0, planSec = longRideSec, modeConfirmed = true, isRaceMode = true)
+        assertEquals(115.0, engine.debtGrams, 0.001)
+    }
 }

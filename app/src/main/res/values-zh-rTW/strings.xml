@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">NutriPro</string>
+    <string name="extension_name">NutriPro</string>
+
+    <!-- Data Types -->
+    <string name="dt_carb_balance">碳水化合物平衡</string>
+    <string name="dt_carb_balance_desc">即時碳水化合物平衡（攝取量減去消耗量）</string>
+    <string name="dt_carbs_burned">已消耗碳水</string>
+    <string name="dt_carbs_burned_desc">騎乘期間消耗的碳水化合物總量</string>
+    <string name="dt_carbs_eaten">已攝取碳水</string>
+    <string name="dt_carbs_eaten_desc">騎乘期間攝取的碳水化合物總量</string>
+    <string name="dt_burn_rate">消耗速率</string>
+    <string name="dt_burn_rate_desc">目前碳水化合物消耗速率 (g/h)</string>
+    <string name="dt_quick_log">快速記錄</string>
+    <string name="dt_quick_log_desc">最近記錄的食物以及距上次攝取的時間</string>
+    <string name="dt_hydration">補水</string>
+    <string name="dt_hydration_desc">水分攝取追蹤與提醒</string>
+    <string name="dt_carb_debt">碳水化合物平衡</string>
+    <string name="dt_carb_debt_desc">碳水化合物平衡與強度調整目標攝取量的對比（+盈餘 / -不足）- 點擊新增</string>
+    <string name="dt_fluid_debt">水分平衡</string>
+    <string name="dt_fluid_debt_desc">水分平衡與根據排汗量估算目標的對比（+盈餘 / -不足）- 點擊新增</string>
+    <string name="dt_sodium_debt">鈉平衡</string>
+    <string name="dt_sodium_debt_desc">鈉平衡與估算排汗流失的對比（+盈餘 / -不足）- 點擊新增</string>
+    <string name="dt_ride_plan">騎乘設定</string>
+    <string name="dt_ride_plan_desc">點擊設定騎乘模式（輕鬆 Z2 / 運動 / 訓練 / 比賽）與預計時長</string>
+    <string name="dt_quick_carb">Quick Carb</string>
+    <string name="dt_quick_carb_desc">點擊確認預設補給份量，或記錄自訂數量</string>
+    <string name="dt_quick_sip">Quick Sip</string>
+    <string name="dt_quick_sip_desc">點擊確認一口水，或記錄自訂數量</string>
+    <string name="dt_quick_sodium">Quick Sodium</string>
+    <string name="dt_quick_sodium_desc">點擊確認一劑鈉，或記錄自訂數量</string>
+    <string name="dt_add_carb">新增碳水</string>
+    <string name="dt_add_carb_desc">點擊選擇食物範本、運動飲料配方或自訂數量</string>
+    <string name="dt_add_fluid">新增水分</string>
+    <string name="dt_add_fluid_desc">點擊選擇預設數量、運動飲料配方或自訂數量</string>
+    <string name="dt_add_sodium">新增鈉</string>
+    <string name="dt_add_sodium_desc">點擊選擇預設劑量、運動飲料配方或自訂數量</string>
+    <string name="dt_fluid_burned">已流失水分</string>
+    <string name="dt_fluid_burned_desc">本次騎乘中估算的排汗水分流失量 (ml)</string>
+    <string name="dt_fluid_eaten">已攝取水分</string>
+    <string name="dt_fluid_eaten_desc">本次騎乘攝取的水分總量 (ml)</string>
+    <string name="dt_fluid_rate">水分速率</string>
+    <string name="dt_fluid_rate_desc">目前估算排汗流失速率 (ml/h)</string>
+    <string name="dt_sodium_burned">已流失鈉</string>
+    <string name="dt_sodium_burned_desc">本次騎乘中估算的排汗鈉流失量 (mg)</string>
+    <string name="dt_sodium_eaten">已攝取鈉</string>
+    <string name="dt_sodium_eaten_desc">本次騎乘攝取的鈉總量 (mg)</string>
+    <string name="dt_sodium_rate">鈉速率</string>
+    <string name="dt_sodium_rate_desc">本次騎乘目前的平均鈉流失速率 (mg/h)</string>
+    <string name="dt_bottles">水壺</string>
+    <string name="dt_bottles_desc">所有水壺中剩餘的水分 - 點擊補充</string>
+
+    <!-- Bonus Actions -->
+    <string name="action_log_food">記錄食物</string>
+    <string name="action_log_water">記錄飲水</string>
+    <string name="action_quick_gel">Quick Gel</string>
+    <string name="action_undo_last">復原上一筆</string>
+
+    <!-- Alerts -->
+    <string name="alert_eat_title">該吃東西了！</string>
+    <string name="alert_eat_detail">建議：%1$dg 碳水。平衡：%2$dg</string>
+    <string name="alert_drink_title">該喝水了！</string>
+    <string name="alert_drink_detail">保持水分補充 — 喝一口水</string>
+
+    <!-- Units -->
+    <string name="unit_grams">g</string>
+    <string name="unit_grams_per_hour">g/h</string>
+    <string name="unit_ml">ml</string>
+    <string name="unit_minutes">分鐘</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">NutriPro 背景</string>
+    <string name="notification_channel_description">騎乘期間的營養追蹤</string>
+    <string name="notification_title">NutriPro</string>
+    <string name="notification_text">正在追蹤營養狀況</string>
+
+    <!-- Settings -->
+    <string name="settings_title">NutriPro 設定</string>
+    <string name="settings_ftp_override">覆寫 FTP</string>
+    <string name="settings_weight_override">覆寫體重</string>
+    <string name="settings_use_karoo_profile">使用 Karoo 個人資料</string>
+    <string name="settings_food_templates">食物範本</string>
+    <string name="settings_sound_enabled">聲音提醒</string>
+    <string name="settings_fit_export">FIT 匯出</string>
+
+    <!-- Quick Log -->
+    <string name="quick_log_title">記錄食物</string>
+    <string name="quick_log_water_title">記錄飲水</string>
+    <string name="quick_log_custom">自訂</string>
+    <string name="quick_log_logged">已記錄 %1$s</string>
+
+    <!-- Settings screen: chrome, sections, labels -->
+    <string name="cd_back">返回</string>
+    <string name="settings_screen_title">NUTRIPRO 設定</string>
+    <string name="section_appearance">外觀</string>
+    <string name="theme_system">系統</string>
+    <string name="theme_light">淺色</string>
+    <string name="theme_dark">深色</string>
+    <string name="section_profile">個人資料</string>
+    <string name="label_ftp">FTP</string>
+    <string name="label_weight">體重</string>
+    <string name="source_row_label">%1$s 來源</string>
+    <string name="source_karoo">Karoo</string>
+    <string name="source_custom">自訂</string>
+    <string name="section_sweat_calibration">排汗校準</string>
+    <string name="label_pre_ride_weight">騎乘前體重</string>
+    <string name="label_post_ride_weight">騎乘後體重</string>
+    <string name="label_current_multiplier">目前係數</string>
+    <string name="calibration_message">已更新為 %1$.2f×（測得流失 %2$.0fml）</string>
+    <string name="section_food_templates">食物範本</string>
+    <string name="badge_default">預設</string>
+    <string name="cd_set_as_default">設為預設</string>
+    <string name="cd_delete">刪除</string>
+    <string name="placeholder_amount_unit">數量 %1$s</string>
+    <string name="action_cancel">取消</string>
+    <string name="action_add">新增</string>
+    <string name="action_add_preset">新增預設</string>
+    <string name="section_fluid_presets">水分預設</string>
+    <string name="section_sodium_presets">鈉預設</string>
+    <string name="section_alerts">提醒</string>
+    <string name="label_carb_alerts">碳水提醒</string>
+    <string name="label_fluid_alerts">水分提醒</string>
+    <string name="label_sodium_alerts">鈉提醒</string>
+    <string name="label_sound">聲音</string>
+    <string name="action_add_template">新增範本</string>
+    <string name="label_serving_size">單份大小</string>
+    <string name="label_sip_size">每口大小</string>
+    <string name="label_quick_sip_amount">Quick Sip 數量</string>
+    <string name="label_bottle_count">水壺數量</string>
+    <string name="label_bottle_size">水壺容量</string>
+    <string name="label_first_alert_after">首次提醒時間</string>
+    <string name="section_fueling">補給設定</string>
+    <string name="label_weather_temperature">天氣溫度</string>
+    <string name="label_manual_temp_fallback">手動溫度（備用）</string>
+    <string name="label_manual_temperature">手動溫度</string>
+    <string name="section_options">選項</string>
+    <string name="section_testing">測試</string>
+    <string name="label_simulation_mode">模擬模式</string>
+    <string name="label_simulated_power">模擬功率</string>
+    <string name="label_simulated_heart_rate">模擬心率</string>
+    <string name="warning_simulation_mode">正在使用模擬功率/心率而非真實感測器 — 請在正式騎乘前關閉。</string>
+    <string name="section_about">關於</string>
+    <string name="label_version">版本</string>
+    <string name="label_github">GitHub</string>
+    <string name="label_contact">聯絡方式</string>
+    <string name="label_privacy_policy">隱私政策</string>
+    <string name="label_license">授權條款</string>
+    <string name="value_license_mit">MIT</string>
+    <string name="helper_range">範圍：%1$d - %2$d %3$s</string>
+    <string name="action_save">儲存</string>
+    <string name="hint_from_karoo_profile">來自 Karoo 個人資料</string>
+    <string name="action_calibrate_from_ride">根據本次騎乘校準</string>
+    <string name="hint_calibrate_requirement">騎乘後輸入兩次體重以進行校準</string>
+    <string name="toggle_on">開</string>
+    <string name="toggle_off">關</string>
+    <string name="suffix_quick_gel_default"> · Quick Gel 預設</string>
+    <string name="cd_set_as_quick_gel_default">設為 Quick Gel 預設</string>
+    <string name="pill_food">食物</string>
+    <string name="pill_drink_mix">運動飲料</string>
+    <string name="placeholder_name">名稱</string>
+    <string name="placeholder_carbs_g">碳水 g</string>
+    <string name="placeholder_fluid_ml">水分 ml</string>
+    <string name="placeholder_sodium_mg">鈉 mg</string>
+    <string name="placeholder_default_sip_ml">預設每口量 ml</string>
+    <string name="unit_watts_suffix">" W"</string>
+    <string name="unit_kg_suffix">" kg"</string>
+
+    <!-- Quick Log screen -->
+    <string name="toast_switched_workout">已切換到訓練模式</string>
+    <string name="dialog_quick_carb_title">QUICK CARB</string>
+    <string name="confirm_ate_food">吃了 %1$s（%2$dg）嗎？</string>
+    <string name="dialog_quick_sip_title">QUICK SIP</string>
+    <string name="confirm_drank_sip">喝了一口水（%1$dml）嗎？</string>
+    <string name="dialog_quick_sodium_title">QUICK SODIUM</string>
+    <string name="confirm_took_sodium">攝取了一劑鈉（%1$dmg）嗎？</string>
+    <string name="toast_not_running">NutriPro 未執行</string>
+    <string name="toast_logged_full">已記錄 %1$s：碳水 %2$dg，水分 %3$dml，鈉 %4$dmg</string>
+    <string name="toast_logged_food">已記錄 %1$s（%2$dg）</string>
+    <string name="template_custom_grams">自訂 %1$dg</string>
+    <string name="toast_logged_carbs">已記錄 %1$dg 碳水</string>
+    <string name="toast_logged_water">已記錄 %1$dml 飲水</string>
+    <string name="toast_logged_sodium">已記錄 %1$dmg 鈉</string>
+    <string name="toast_undone">已復原</string>
+    <string name="toast_nothing_to_undo">沒有可復原的內容</string>
+    <string name="toast_refilled">已補充 %1$dml</string>
+    <string name="toast_ride_mode_set">騎乘模式已設為 %1$s</string>
+    <string name="time_just_now">剛剛</string>
+    <string name="time_minutes_ago">%1$d 分鐘前</string>
+    <string name="action_undo_last_button">復原上一筆</string>
+    <string name="dialog_custom_carbs_title">自訂碳水</string>
+    <string name="dialog_log_food_title">記錄食物</string>
+    <string name="label_carbs">碳水</string>
+    <string name="unit_grams_label">克</string>
+    <string name="cd_plus5">+5</string>
+    <string name="action_back">返回</string>
+    <string name="action_log_grams">記錄 %1$dg</string>
+    <string name="hint_adds_all">同時新增碳水 + 水分 + 鈉</string>
+    <string name="stat_fluid_sodium">%1$dml · %2$dmg</string>
+    <string name="action_custom">自訂</string>
+    <string name="action_cancel_caps">取消</string>
+    <string name="dialog_log_water_title">記錄飲水</string>
+    <string name="dialog_log_sodium_title">記錄鈉</string>
+    <string name="dialog_custom_amount_title">自訂數量</string>
+    <string name="dialog_custom_refill_title">自訂補充</string>
+    <string name="dialog_refill_bottles_title">補充水壺</string>
+    <string name="cd_plus_step">+%1$s</string>
+    <string name="action_log_amount">記錄 %1$s%2$s</string>
+    <string name="action_confirm">確認</string>
+    <string name="confirm_refill_both">要補充兩個水壺嗎？</string>
+    <string name="action_refill_full">完全補滿（%1$dml）</string>
+    <string name="cd_plus50">+50</string>
+    <string name="action_refill_amount">補充 %1$dml</string>
+    <string name="ridemode_casual_z2">輕鬆 Z2</string>
+    <string name="ridemode_casual_sport">輕鬆運動</string>
+    <string name="ridemode_workout">訓練</string>
+    <string name="ridemode_race">比賽</string>
+    <string name="ridemode_casual_z2_title">輕鬆 · Z2</string>
+    <string name="ridemode_casual_z2_subtitle">放鬆騎乘，碳水目標較低</string>
+    <string name="ridemode_casual_sport_title">輕鬆 · 運動 (Z3-Z4)</string>
+    <string name="ridemode_casual_sport_subtitle">穩定強度，目標較高</string>
+    <string name="ridemode_workout_subtitle">依照已載入的訓練計畫進行</string>
+    <string name="ridemode_race_subtitle">全力衝刺，提前補給 + 快速提醒</string>
+    <string name="duration_using_route">使用已載入的路線</string>
+    <string name="duration_lt_1h">不到 1 小時</string>
+    <string name="duration_1_2h">1 - 2 小時</string>
+    <string name="duration_2_3h">2 - 3 小時</string>
+    <string name="duration_3_4h">3 - 4 小時</string>
+    <string name="duration_4h_plus">4 小時以上</string>
+    <string name="step_title_ride_mode">騎乘模式 · 1/2</string>
+    <string name="step_title_ride_plan">騎乘計畫 · 2/2</string>
+
+    <!-- Glance tiles -->
+    <string name="glance_dash">-</string>
+    <string name="glance_just_now">剛剛</string>
+    <string name="glance_minutes_short">%1$d分</string>
+    <string name="glance_hours_short">%1$d時</string>
+    <string name="glance_hours_minutes_short">%1$d時%2$d分</string>
+    <string name="glance_balance_caption">平衡</string>
+    <string name="glance_carb_balance_caption">碳水平衡</string>
+    <string name="glance_burned">已消耗</string>
+    <string name="glance_eaten">已攝取</string>
+    <string name="glance_rate">速率</string>
+    <string name="glance_compact_be">耗:%1$s  攝:%2$s</string>
+    <string name="glance_burn_rate">消耗速率</string>
+    <string name="glance_last_eat">最近進食</string>
+    <string name="glance_compact_e">攝: %1$s</string>
+    <string name="glance_compact_b">耗: %1$s</string>
+    <string name="glance_hydration_caption">補水</string>
+    <string name="glance_total">總計</string>
+    <string name="glance_sips">喝水次數</string>
+    <string name="glance_last_food_caption">最近進食</string>
+    <string name="glance_name">名稱</string>
+    <string name="glance_ago">前</string>
+    <string name="glance_bal">平衡</string>
+    <string name="glance_time">時間</string>
+    <string name="glance_balance">平衡</string>
+    <string name="glance_compact_bal">平衡: %1$s</string>
+
+    <!-- Data type tiles -->
+    <string name="dt_fluid_short">水分</string>
+    <string name="dt_bottles_short">水壺</string>
+    <string name="dt_carb_short">碳水</string>
+    <string name="dt_sodium_short">鈉</string>
+    <string name="dt_quick_sodium_short">QUICK SODIUM</string>
+    <string name="dt_add_carb_short">新增碳水</string>
+    <string name="dt_select">選擇</string>
+    <string name="dt_add_sodium_short">新增鈉</string>
+    <string name="dt_add_fluid_short">新增水分</string>
+    <string name="dt_quick_carb_short">QUICK CARB</string>
+    <string name="dt_quick_sip_short">QUICK SIP</string>
+    <string name="rideplan_using_route">使用路線</string>
+    <string name="rideplan_hour_plan">%1$d 小時計畫</string>
+    <string name="rideplan_min_plan">%1$d 分鐘計畫</string>
+    <string name="rideplan_casual_z2">輕鬆 Z2</string>
+    <string name="rideplan_sport">運動</string>
+    <string name="rideplan_workout">訓練</string>
+    <string name="rideplan_race">比賽</string>
+    <string name="rideplan_setup">騎乘設定</string>
+
+    <!-- FIT export summary -->
+    <string name="fit_ride_summary_comment">騎乘摘要：碳水 %1$.0fg，水分 %2$.0fml（估算排汗流失 %3$.1fL）</string>
+
+    <!-- Eat/drink/sodium alert notifications -->
+    <string name="alert_workout_detected_title">偵測到結構化訓練 - 切換到訓練模式以取得依間歇調整的補給提醒？</string>
+    <string name="action_switch_workout_mode">切換到訓練模式</string>
+    <string name="alert_race_preload_title">比賽模式 - 立即提前補給</string>
+    <string name="alert_race_preload_detail">如尚未補給，請在強度上升前補充碳水。</string>
+    <string name="alert_no_route_title">補給提醒將於 1 小時後開始</string>
+    <string name="alert_no_route_detail">未設定路線或預計時長 - 若騎乘時間較長，請載入路線或設定騎乘計畫。</string>
+    <string name="composition_note"> 需要雙糖源：葡萄糖:果糖比例為 2:1 或 1:0.8。</string>
+    <string name="alert_eat_detail_full">建議：碳水 %1$dg。不足：%2$dg。%3$s</string>
+    <string name="notif_eat_text">該吃東西了！ %1$s</string>
+    <string name="action_log_food_grams">記錄 %1$s %2$dg</string>
+    <string name="notif_drink_text">該喝水了！保持水分補充 — 喝一口水。</string>
+    <string name="action_log_sip">記錄 %1$dml 一口水</string>
+    <string name="alert_low_sodium_title">鈉含量偏低</string>
+    <string name="alert_low_sodium_detail">不足：%1$dmg</string>
+    <string name="notif_low_sodium_text">鈉含量偏低。不足：%1$dmg。</string>
+    <string name="action_log_sodium_dose">記錄 %1$dmg 劑量</string>
+    <string name="alert_climb_title">前方有爬坡 – 請立即進食</string>
+    <string name="alert_climb_detail">在爬坡開始前補充能量</string>
+    <string name="alert_interval_title">間歇即將結束 - 請立即進食</string>
+    <string name="alert_interval_detail">在下一段強度開始前補充能量</string>
+    <string name="notif_bottle_low">水壺即將用盡 — 請規劃補水</string>
+    <string name="notif_bottles_empty">水壺已空。您已用完共 %1$dml — 點擊水壺欄位進行補充。</string>
+
+    <!-- FTP reminder -->
+    <string name="notif_set_ftp">請設定您的 FTP 以取得精準追蹤。開啟 NutriPro 設定或 Karoo 個人資料。</string>
+    <string name="action_open_settings">開啟設定</string>
+
+    <!-- Logged entry display names -->
+    <string name="entry_water_ml">%1$dml 飲水</string>
+    <string name="entry_sodium_mg">%1$dmg 鈉</string>
+
+    <!-- Default food template seed names -->
+    <string name="food_energy_bar">能量棒</string>
+    <string name="food_banana">香蕉</string>
+    <string name="food_energy_gel">能量膠</string>
+    <string name="label_generic_entry">記錄</string>
+    <string name="label_logged_summary">%1$s · %2$s 已記錄</string>
+</resources>

@@ -62,14 +62,25 @@ class NutriProExtension : KarooExtension("nutripro", BuildConfig.VERSION_NAME) {
             CarbsBurnedDataType(tracker, extension),
             CarbsEatenDataType(tracker, extension),
             BurnRateDataType(tracker, extension),
-            QuickLogStatusDataType(tracker, extension),
-            HydrationDataType(tracker, extension),
-            CarbDebtDataType(preferences, tracker, extension),
-            FluidDebtDataType(preferences, tracker, extension),
-            SodiumDebtDataType(preferences, tracker, extension),
+            QuickLogStatusDataType(preferences, tracker, extension),
+            HydrationDataType(preferences, tracker, extension),
+            CarbDebtDataType(tracker, extension),
+            FluidDebtDataType(tracker, extension),
+            SodiumDebtDataType(tracker, extension),
             RidePlanDataType(preferences, extension),
+            QuickCarbDataType(preferences, tracker, extension),
             QuickSipDataType(preferences, tracker, extension),
             QuickSodiumLogDataType(preferences, tracker, extension),
+            AddCarbDataType(preferences, tracker, extension),
+            AddFluidDataType(preferences, tracker, extension),
+            AddSodiumDataType(preferences, tracker, extension),
+            FluidBurnedDataType(tracker, extension),
+            FluidEatenDataType(tracker, extension),
+            FluidRateDataType(tracker, extension),
+            SodiumBurnedDataType(tracker, extension),
+            SodiumEatenDataType(tracker, extension),
+            SodiumRateDataType(tracker, extension),
+            BottlesDataType(preferences, tracker, extension),
         )
     }
 
@@ -81,6 +92,10 @@ class NutriProExtension : KarooExtension("nutripro", BuildConfig.VERSION_NAME) {
         RideField(4, "carb_target", "g/h") { it.carbTargetGph },
         RideField(5, "sweat_loss", "ml") { it.sweatLossMl },
         RideField(6, "temperature", "C") { it.currentTempC },
+        RideField(7, "sodium_burned", "mg") { it.sodiumLossMg },
+        RideField(8, "sodium_eaten", "mg") { it.totalSodiumMg },
+        RideField(9, "sodium_balance", "mg") { it.sodiumBalance },
+        RideField(10, "bottles_remaining", "ml") { it.remainingBottleMl },
     )
 
     override fun onCreate() {
@@ -94,6 +109,7 @@ class NutriProExtension : KarooExtension("nutripro", BuildConfig.VERSION_NAME) {
         alertManager = EatAlertManager(karooSystem, tracker, preferences)
         NutriProExtensionHolder.tracker = tracker
         NutriProExtensionHolder.preferences = preferences
+        NutriProExtensionHolder.alertManager = alertManager
 
         connectionJob = lifecycleScope.launch {
             karooSystem.connect { connected ->
@@ -244,6 +260,7 @@ class NutriProExtension : KarooExtension("nutripro", BuildConfig.VERSION_NAME) {
         karooSystem.disconnect()
         NutriProExtensionHolder.tracker = null
         NutriProExtensionHolder.preferences = null
+        NutriProExtensionHolder.alertManager = null
         super.onDestroy()
     }
 }

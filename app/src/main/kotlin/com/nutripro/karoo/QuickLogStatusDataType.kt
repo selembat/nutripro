@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import com.nutripro.engine.CarbBalanceTracker
 import com.nutripro.glance.QuickLogStatusView
 import com.nutripro.model.RideNutritionState
+import com.nutripro.util.Preferences
 import io.hammerhead.karooext.models.ViewConfig
 
 private val previewState = RideNutritionState(
@@ -15,8 +16,11 @@ private val previewState = RideNutritionState(
     lastIntakeTimestampMs = System.currentTimeMillis() - 8 * 60_000,
 )
 
-class QuickLogStatusDataType(tracker: CarbBalanceTracker, extension: String) :
-    GraphicalDataType(tracker, extension, "quick-log-status", streamValue = { it.totalEaten }) {
+class QuickLogStatusDataType(
+    private val preferences: Preferences,
+    tracker: CarbBalanceTracker,
+    extension: String,
+) : GraphicalDataType(tracker, extension, "quick-log-status", streamValue = { it.totalEaten }) {
 
     @Composable
     override fun Content(state: RideNutritionState?, viewConfig: ViewConfig) {
@@ -27,6 +31,7 @@ class QuickLogStatusDataType(tracker: CarbBalanceTracker, extension: String) :
             lastIntakeTimestampMs = s.lastIntakeTimestampMs,
             balance = s.balance,
             burnRateGph = s.burnRateGph,
+            themeMode = preferences.themeMode,
             viewConfig = viewConfig,
         )
     }
