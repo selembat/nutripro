@@ -16,7 +16,7 @@ import kotlin.reflect.KProperty
  * small delegated property instead of a hand-written get/set pair per field,
  * so adding a setting is one line rather than a getter/setter/key triple.
  */
-class Preferences(private val context: Context) {
+class Preferences(val context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("nutripro_prefs", Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true }
 

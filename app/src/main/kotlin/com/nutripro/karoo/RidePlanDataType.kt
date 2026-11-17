@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.ui.unit.DpSize
 import androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi
 import androidx.glance.appwidget.GlanceRemoteViews
+import com.nutripro.R
 import com.nutripro.glance.GlanceColors
 import com.nutripro.glance.RideSetupFieldView
 import com.nutripro.glance.rememberFieldColors
@@ -39,22 +40,26 @@ class RidePlanDataType(
             while (true) {
                 val minutes = preferences.plannedRideMinutes
                 val durationText = when {
-                    minutes <= 0 -> "using route"
-                    minutes >= 60 -> "${minutes / 60}h${if (minutes % 60 != 0) (minutes % 60).toString() else ""} plan"
-                    else -> "${minutes}m plan"
+                    minutes <= 0 -> context.getString(R.string.rideplan_using_route)
+                    minutes >= 60 -> if (minutes % 60 != 0) {
+                        context.getString(R.string.rideplan_hour_plan, minutes / 60) + "${minutes % 60}m"
+                    } else {
+                        context.getString(R.string.rideplan_hour_plan, minutes / 60)
+                    }
+                    else -> context.getString(R.string.rideplan_min_plan, minutes)
                 }
                 val mode = preferences.rideMode
                 val modeText = when (mode) {
-                    RideMode.CASUAL_Z2 -> "CASUAL Z2"
-                    RideMode.CASUAL_SPORT -> "SPORT"
-                    RideMode.WORKOUT -> "WORKOUT"
-                    RideMode.RACE -> "RACE"
+                    RideMode.CASUAL_Z2 -> context.getString(R.string.rideplan_casual_z2)
+                    RideMode.CASUAL_SPORT -> context.getString(R.string.rideplan_sport)
+                    RideMode.WORKOUT -> context.getString(R.string.rideplan_workout)
+                    RideMode.RACE -> context.getString(R.string.rideplan_race)
                     else -> mode
                 }
                 val result = glance.compose(context, DpSize.Unspecified) {
                     val (bg, label) = rememberFieldColors(preferences.themeMode)
                     RideSetupFieldView(
-                        label = "RIDE SETUP",
+                        label = context.getString(R.string.rideplan_setup),
                         primaryValueText = modeText,
                         secondaryValueText = durationText,
                         accentColor = GlanceColors.rideModeAccent(mode),

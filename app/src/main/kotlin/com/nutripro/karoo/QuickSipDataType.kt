@@ -1,6 +1,8 @@
 package com.nutripro.karoo
 
 import androidx.compose.runtime.Composable
+import androidx.glance.LocalContext
+import com.nutripro.R
 import com.nutripro.engine.CarbBalanceTracker
 import com.nutripro.glance.GlanceColors
 import com.nutripro.glance.QuickActionButtonView
@@ -23,7 +25,7 @@ class QuickSipDataType(
     override fun Content(state: RideNutritionState?, viewConfig: ViewConfig) {
         val (bg, label) = rememberFieldColors(preferences.themeMode)
         QuickActionButtonView(
-            label = "QUICK SIP",
+            label = LocalContext.current.getString(R.string.dt_quick_sip_short),
             valueText = preferences.sipAmountMl.toInt().toString(),
             unitText = "ml",
             accentColor = GlanceColors.Water,

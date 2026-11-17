@@ -1,5 +1,7 @@
 package com.nutripro.engine
 
+import android.content.Context
+import com.nutripro.R
 import com.nutripro.karoo.consumerFlow
 import com.nutripro.karoo.streamDataFlow
 import com.nutripro.util.Preferences
@@ -25,6 +27,7 @@ private const val MAX_PLAUSIBLE_KCAL_DELTA = 50.0
 
 /** Turns the live calorie counter into carbs burned, using %FTP to split kcal between carbs and fat. */
 class CarbBurnEngine(
+    private val context: Context,
     private val karooSystem: KarooSystemService,
     private val tracker: CarbBalanceTracker,
     private val preferences: Preferences,
@@ -53,8 +56,8 @@ class CarbBurnEngine(
             karooSystem.dispatch(
                 SystemNotification(
                     "nutripro-no-ftp",
-                    "Set your FTP for accurate tracking. Open NutriPro settings or Karoo profile.",
-                    action = "Open Settings",
+                    context.getString(R.string.notif_set_ftp),
+                    action = context.getString(R.string.action_open_settings),
                     actionIntent = "com.nutripro.SETTINGS",
                 ),
             )

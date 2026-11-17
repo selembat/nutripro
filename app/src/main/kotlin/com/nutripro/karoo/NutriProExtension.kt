@@ -105,8 +105,8 @@ class NutriProExtension : KarooExtension("nutripro", BuildConfig.VERSION_NAME) {
         karooSystem = KarooSystemService(this)
         preferences = Preferences(applicationContext)
         tracker = CarbBalanceTracker(preferences)
-        burnEngine = CarbBurnEngine(karooSystem, tracker, preferences)
-        alertManager = EatAlertManager(karooSystem, tracker, preferences)
+        burnEngine = CarbBurnEngine(applicationContext, karooSystem, tracker, preferences)
+        alertManager = EatAlertManager(applicationContext, karooSystem, tracker, preferences)
         NutriProExtensionHolder.tracker = tracker
         NutriProExtensionHolder.preferences = preferences
         NutriProExtensionHolder.alertManager = alertManager
@@ -159,12 +159,15 @@ class NutriProExtension : KarooExtension("nutripro", BuildConfig.VERSION_NAME) {
             state.totalWaterMl,
             state.sweatLossMl,
         )
-        val sweatLossLiters = "%.1f".format(state.sweatLossMl / 1000.0)
         karooSystem.dispatch(
             SystemNotification(
                 "nutripro-ride-summary",
-                "Ride summary: ${state.totalEaten.toInt()}g carbs, ${state.totalWaterMl.toInt()}ml water " +
-                    "(est. sweat loss ${sweatLossLiters}L)",
+                getString(
+                    R.string.fit_ride_summary_comment,
+                    state.totalEaten,
+                    state.totalWaterMl,
+                    state.sweatLossMl / 1000.0,
+                ),
             ),
         )
     }

@@ -1,5 +1,6 @@
 package com.nutripro.karoo
 
+import android.content.Context
 import com.nutripro.R
 import com.nutripro.engine.AlertChannel
 import com.nutripro.engine.CarbBalanceTracker
@@ -35,6 +36,7 @@ import timber.log.Timber
  * the resulting [InRideAlert]s.
  */
 class EatAlertManager(
+    private val context: Context,
     private val karooSystem: KarooSystemService,
     private val tracker: CarbBalanceTracker,
     private val preferences: Preferences,
@@ -509,8 +511,8 @@ class EatAlertManager(
         karooSystem.dispatch(
             SystemNotification(
                 "nutripro-workout-detected",
-                "Structured workout detected - switch to Workout mode for interval-aware fueling alerts?",
-                action = "Switch to Workout mode",
+                context.getString(R.string.alert_workout_detected_title),
+                action = context.getString(R.string.action_switch_workout_mode),
                 actionIntent = "com.nutripro.SET_RIDE_MODE_WORKOUT",
             ),
         )
@@ -524,8 +526,8 @@ class EatAlertManager(
         dispatchAlert(
             idPrefix = "race-preload",
             icon = R.drawable.ic_food,
-            title = "Race mode - pre-load now",
-            detail = "If you haven't already, top up carbs before the effort ramps up.",
+            title = context.getString(R.string.alert_race_preload_title),
+            detail = context.getString(R.string.alert_race_preload_detail),
             backgroundColor = R.color.alert_eat,
             autoDismissMs = 10_000,
             tones = listOf(
@@ -566,8 +568,8 @@ class EatAlertManager(
         dispatchAlert(
             idPrefix = "duration-notice",
             icon = R.drawable.ic_food,
-            title = "Fueling alerts start after 1h",
-            detail = "No route or planned duration set - load a route or set a ride plan if you're riding longer.",
+            title = context.getString(R.string.alert_no_route_title),
+            detail = context.getString(R.string.alert_no_route_detail),
             backgroundColor = R.color.alert_eat,
             autoDismissMs = 8_000,
             tones = listOf(
@@ -634,16 +636,16 @@ class EatAlertManager(
         val carbTargetGph = tracker.stateFlow.value.carbTargetGph
         val dualSourceThresholdGph = if (preferences.rideMode == RideMode.RACE) RACE_DUAL_SOURCE_THRESHOLD_GPH else DUAL_SOURCE_THRESHOLD_GPH
         val compositionNote = if (carbTargetGph > dualSourceThresholdGph) {
-            " Dual-source required: 2:1 or 1:0.8 glucose:fructose."
+            context.getString(R.string.composition_note)
         } else {
             ""
         }
-        val eatDetail = "Recommended: ${defaultTemplate.carbsGrams}g carbs. Debt: ${carbDebtGrams.toInt()}g.$compositionNote"
+        val eatDetail = context.getString(R.string.alert_eat_detail_full, defaultTemplate.carbsGrams, carbDebtGrams.toInt(), compositionNote)
 
         dispatchAlert(
             idPrefix = "eat-reminder",
             icon = R.drawable.ic_food,
-            title = "Time to eat!",
+            title = context.getString(R.string.alert_eat_title),
             detail = eatDetail,
             backgroundColor = R.color.alert_eat,
             autoDismissMs = 10_000,
@@ -657,8 +659,8 @@ class EatAlertManager(
         karooSystem.dispatch(
             SystemNotification(
                 "eat-notification",
-                "Time to eat! $eatDetail",
-                action = "Log ${defaultTemplate.name} ${defaultTemplate.carbsGrams}g",
+                context.getString(R.string.notif_eat_text, eatDetail),
+                action = context.getString(R.string.action_log_food_grams, defaultTemplate.name, defaultTemplate.carbsGrams),
                 actionIntent = "com.nutripro.QUICK_LOG",
             ),
         )
@@ -669,8 +671,8 @@ class EatAlertManager(
         dispatchAlert(
             idPrefix = "drink-reminder",
             icon = R.drawable.ic_water,
-            title = "Drink water!",
-            detail = "Stay hydrated — take a sip",
+            title = context.getString(R.string.alert_drink_title),
+            detail = context.getString(R.string.alert_drink_detail),
             backgroundColor = R.color.alert_drink,
             autoDismissMs = 8_000,
             tones = listOf(
@@ -684,8 +686,8 @@ class EatAlertManager(
         karooSystem.dispatch(
             SystemNotification(
                 "drink-notification",
-                "Drink water! Stay hydrated — take a sip.",
-                action = "Log ${sipMl}ml sip",
+                context.getString(R.string.notif_drink_text),
+                action = context.getString(R.string.action_log_sip, sipMl),
                 actionIntent = "com.nutripro.QUICK_LOG_WATER",
             ),
         )
@@ -696,8 +698,8 @@ class EatAlertManager(
         dispatchAlert(
             idPrefix = "sodium-reminder",
             icon = R.drawable.ic_sodium,
-            title = "Low on sodium",
-            detail = "Debt: ${sodiumDebtMg.toInt()}mg",
+            title = context.getString(R.string.alert_low_sodium_title),
+            detail = context.getString(R.string.alert_low_sodium_detail, sodiumDebtMg.toInt()),
             backgroundColor = R.color.alert_sodium,
             autoDismissMs = 8_000,
             tones = listOf(
@@ -711,8 +713,8 @@ class EatAlertManager(
         karooSystem.dispatch(
             SystemNotification(
                 "sodium-notification",
-                "Low on sodium. Debt: ${sodiumDebtMg.toInt()}mg.",
-                action = "Log ${doseMg}mg dose",
+                context.getString(R.string.notif_low_sodium_text, sodiumDebtMg.toInt()),
+                action = context.getString(R.string.action_log_sodium_dose, doseMg),
                 actionIntent = "com.nutripro.QUICK_LOG_SODIUM",
             ),
         )
@@ -723,8 +725,8 @@ class EatAlertManager(
         dispatchAlert(
             idPrefix = "climb-ahead",
             icon = R.drawable.ic_food,
-            title = "Climb ahead – eat now",
-            detail = "Top up before the climb starts",
+            title = context.getString(R.string.alert_climb_title),
+            detail = context.getString(R.string.alert_climb_detail),
             backgroundColor = R.color.alert_eat,
             autoDismissMs = 10_000,
             tones = listOf(
@@ -742,8 +744,8 @@ class EatAlertManager(
         dispatchAlert(
             idPrefix = "interval-ahead",
             icon = R.drawable.ic_food,
-            title = "Interval ending - eat now",
-            detail = "Top up before the next effort starts",
+            title = context.getString(R.string.alert_interval_title),
+            detail = context.getString(R.string.alert_interval_detail),
             backgroundColor = R.color.alert_eat,
             autoDismissMs = 10_000,
             tones = listOf(
@@ -761,7 +763,7 @@ class EatAlertManager(
         karooSystem.dispatch(
             SystemNotification(
                 "bottle-warning",
-                "Bottle nearly empty — plan a refill",
+                context.getString(R.string.notif_bottle_low),
             ),
         )
     }
@@ -772,7 +774,7 @@ class EatAlertManager(
         karooSystem.dispatch(
             SystemNotification(
                 "bottles-empty",
-                "Bottles empty. You've used all ${capacityMl}ml — tap the Bottles field to refill.",
+                context.getString(R.string.notif_bottles_empty, capacityMl),
             ),
         )
     }

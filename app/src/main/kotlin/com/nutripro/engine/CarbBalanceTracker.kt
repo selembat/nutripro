@@ -1,5 +1,6 @@
 package com.nutripro.engine
 
+import com.nutripro.R
 import com.nutripro.model.IntakeEntry
 import com.nutripro.model.RideNutritionState
 import com.nutripro.util.Preferences
@@ -190,7 +191,7 @@ class CarbBalanceTracker(private val preferences: Preferences) {
             timestampMs = now,
             carbsGrams = 0.0,
             type = IntakeEntry.IntakeType.WATER,
-            templateName = "${ml.toInt()}ml water",
+            templateName = preferences.context.getString(R.string.entry_water_ml, ml.toInt()),
             waterMl = ml,
         )
         val current = _stateFlow.value
@@ -218,7 +219,7 @@ class CarbBalanceTracker(private val preferences: Preferences) {
             timestampMs = now,
             carbsGrams = 0.0,
             type = IntakeEntry.IntakeType.SODIUM,
-            templateName = "${mg.toInt()}mg sodium",
+            templateName = preferences.context.getString(R.string.entry_sodium_mg, mg.toInt()),
             sodiumMg = mg,
         )
         val current = _stateFlow.value
