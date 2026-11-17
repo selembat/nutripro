@@ -2,16 +2,17 @@ package com.nutripro.karoo
 
 import androidx.compose.runtime.Composable
 import com.nutripro.engine.CarbBalanceTracker
+import com.nutripro.glance.BalanceBarView
 import com.nutripro.glance.GlanceColors
-import com.nutripro.glance.QuickActionButtonView
 import com.nutripro.model.RideNutritionState
 import com.nutripro.util.Preferences
 import io.hammerhead.karooext.models.ViewConfig
+import kotlin.math.roundToInt
 
 /**
- * Fluid debt (spec 3.2): estimated ml behind the sweat-based drink target. Background color
- * shows urgency relative to one sip-block, and tapping the field instantly logs the
- * configured Quick Sip amount - no menu, same pattern as the Carb/Sodium debt fields.
+ * Fluid balance status (spec 3.2): ml behind (-X) or ahead (+X) of the sweat-based drink
+ * target, shown as a balance bar (right = ahead, left = owed) scaled to one sip-block.
+ * Pure status - no tap; logging happens via the separate Quick Sip field.
  */
 class FluidDebtDataType(
     private val preferences: Preferences,
@@ -23,16 +24,15 @@ class FluidDebtDataType(
     override fun Content(state: RideNutritionState?, viewConfig: ViewConfig) {
         val debtMl = state?.fluidDebtMl ?: 45.0
         val sipBlockMl = preferences.sipBlockMl.toDouble()
+        val balance = -debtMl
+        val color = if (balance >= 0) GlanceColors.Water else GlanceColors.Error
 
-        QuickActionButtonView(
-            label = "FLUID DEBT",
-            valueText = debtMl.toInt().toString(),
+        BalanceBarView(
+            label = "FLUID",
+            signedValueText = if (balance >= 0) "+${balance.roundToInt()}" else "${balance.roundToInt()}",
             unitText = "ml",
-            accentColor = GlanceColors.White,
-            quickLogMode = "quick-water",
-            viewConfig = viewConfig,
-            backgroundColor = GlanceColors.debtBgColor(debtMl, sipBlockMl),
-            fillFraction = (debtMl / sipBlockMl).toFloat(),
+            ratio = (balance / sipBlockMl).toFloat(),
+            color = color,
         )
     }
 }

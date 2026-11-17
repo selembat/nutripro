@@ -16,14 +16,18 @@
     <string name="dt_quick_log_desc">Last logged food item and time since last intake</string>
     <string name="dt_hydration">Hydration</string>
     <string name="dt_hydration_desc">Water intake tracking and reminders</string>
-    <string name="dt_carb_debt">Carb Debt</string>
-    <string name="dt_carb_debt_desc">Grams owed vs. the intensity-adjusted intake target - tap to log your default food</string>
-    <string name="dt_fluid_debt">Fluid Debt</string>
-    <string name="dt_fluid_debt_desc">Fluid owed vs. the estimated sweat-based drink target - tap to log your Quick Sip</string>
-    <string name="dt_sodium_debt">Sodium Debt</string>
-    <string name="dt_sodium_debt_desc">Sodium owed vs. estimated sweat loss - tap to log your dose</string>
+    <string name="dt_carb_debt">Carb Balance</string>
+    <string name="dt_carb_debt_desc">Carb balance vs. the intensity-adjusted intake target (+ahead / -owed)</string>
+    <string name="dt_fluid_debt">Fluid Balance</string>
+    <string name="dt_fluid_debt_desc">Fluid balance vs. the estimated sweat-based drink target (+ahead / -owed)</string>
+    <string name="dt_sodium_debt">Sodium Balance</string>
+    <string name="dt_sodium_debt_desc">Sodium balance vs. estimated sweat loss (+ahead / -owed)</string>
     <string name="dt_ride_plan">Ride Plan</string>
     <string name="dt_ride_plan_desc">Tap to pick how long you\'re riding - sets the carb-debt duration gate</string>
+    <string name="dt_quick_sip">Quick Sip</string>
+    <string name="dt_quick_sip_desc">Tap to confirm a sip, or log a custom amount</string>
+    <string name="dt_quick_sodium">Quick Sodium</string>
+    <string name="dt_quick_sodium_desc">Tap to confirm a sodium dose, or log a custom amount</string>
 
     <!-- Bonus Actions -->
     <string name="action_log_food">Log Food</string>

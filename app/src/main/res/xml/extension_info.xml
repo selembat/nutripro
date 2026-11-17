@@ -66,6 +66,18 @@
         description="@string/dt_ride_plan_desc"
         graphical="true"
         icon="@drawable/ic_food" />
+    <DataType
+        typeId="quick-sip"
+        displayName="@string/dt_quick_sip"
+        description="@string/dt_quick_sip_desc"
+        graphical="true"
+        icon="@drawable/ic_water" />
+    <DataType
+        typeId="quick-sodium"
+        displayName="@string/dt_quick_sodium"
+        description="@string/dt_quick_sodium_desc"
+        graphical="true"
+        icon="@drawable/ic_water" />
 
     <BonusAction
         actionId="log-food"

@@ -66,17 +66,35 @@ class QuickLogActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         preferences = NutriProExtensionHolder.preferences ?: Preferences(applicationContext)
 
-        when (intent?.getStringExtra("mode")) {
-            "quick-food" -> return logFood(preferences.getDefaultTemplate())
-            "quick-water" -> return logWater(preferences.sipAmountMl.toInt())
-            "quick-sodium" -> return logSodium(preferences.sodiumDoseMg.toInt())
-        }
-
         setContent {
             NutriProTheme {
                 when (intent?.getStringExtra("mode")) {
                     "water" -> WaterLogScreen(onLog = ::logWater, onCancel = ::finish)
                     "duration" -> RidePlanScreen(onPick = ::setPlannedMinutes, onCancel = ::finish)
+                    "confirm-water" -> ConfirmDoseScreen(
+                        title = "QUICK SIP",
+                        barColor = Water,
+                        contentColor = Color.White,
+                        confirmLabel = "Drank a sip (${preferences.sipAmountMl.toInt()}ml)?",
+                        confirmAmount = preferences.sipAmountMl.toInt(),
+                        unit = "ml",
+                        step = 25,
+                        range = 25..1000,
+                        onConfirm = ::logWater,
+                        onCancel = ::finish,
+                    )
+                    "confirm-sodium" -> ConfirmDoseScreen(
+                        title = "QUICK SODIUM",
+                        barColor = Accent,
+                        contentColor = OnAccent,
+                        confirmLabel = "Took a sodium dose (${preferences.sodiumDoseMg.toInt()}mg)?",
+                        confirmAmount = preferences.sodiumDoseMg.toInt(),
+                        unit = "mg",
+                        step = 100,
+                        range = 100..2000,
+                        onConfirm = ::logSodium,
+                        onCancel = ::finish,
+                    )
                     else -> FoodLogScreen(
                         templates = preferences.loadFoodTemplates(),
                         onLog = ::logFood,
@@ -346,6 +364,97 @@ fun WaterLogScreen(onLog: (Int) -> Unit, onCancel: () -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
             onClick = onCancel,
         )
+    }
+}
+
+/**
+ * A quick, single-dose confirm step for Quick Sip / Quick Sodium: "did you just take the
+ * configured amount?" with one tap to confirm, or a fallback to a custom amount stepper -
+ * same two-screen shape as [FoodLogScreen]'s custom-carbs flow.
+ */
+@Composable
+fun ConfirmDoseScreen(
+    title: String,
+    barColor: Color,
+    contentColor: Color,
+    confirmLabel: String,
+    confirmAmount: Int,
+    unit: String,
+    step: Int,
+    range: IntRange,
+    onConfirm: (Int) -> Unit,
+    onCancel: () -> Unit,
+) {
+    val compact = isCompactScreen()
+    val buttonHeight = if (compact) 48.dp else 56.dp
+    var showCustom by remember { mutableStateOf(false) }
+    var customAmount by remember { mutableIntStateOf(confirmAmount) }
+
+    Column(modifier = Modifier.fillMaxSize().background(Background)) {
+        ScreenHeader(
+            title = if (showCustom) "CUSTOM AMOUNT" else title,
+            barColor = barColor,
+            contentColor = contentColor,
+            onBack = if (showCustom) ({ showCustom = false }) else onCancel,
+            compact = compact,
+        )
+
+        if (showCustom) {
+            Column(
+                modifier = Modifier.weight(1f).padding(horizontal = 12.dp, vertical = if (compact) 12.dp else 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Pill(
+                        modifier = Modifier.size(if (compact) 52.dp else 60.dp),
+                        backgroundColor = Surface,
+                        onClick = { customAmount = (customAmount - step).coerceAtLeast(range.first) },
+                    ) {
+                        Text(text = "−", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = OnSurface)
+                    }
+
+                    Column(modifier = Modifier.width(if (compact) 100.dp else 120.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(text = "$customAmount", fontSize = if (compact) 42.sp else 56.sp, fontWeight = FontWeight.Black, color = barColor, textAlign = TextAlign.Center)
+                        Text(text = unit, fontSize = if (compact) 12.sp else 14.sp, fontWeight = FontWeight.Medium, color = barColor.copy(alpha = 0.6f))
+                    }
+
+                    Pill(
+                        modifier = Modifier.size(if (compact) 52.dp else 60.dp),
+                        backgroundColor = Surface,
+                        onClick = { customAmount = (customAmount + step).coerceAtMost(range.last) },
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "+$step", tint = OnSurface, modifier = Modifier.size(24.dp))
+                    }
+                }
+            }
+
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ActionButton("BACK", Surface, OnSurfaceVariant, buttonHeight, Modifier.weight(1f)) { showCustom = false }
+                ActionButton("LOG $customAmount$unit", barColor, Color.Black, buttonHeight, Modifier.weight(1f)) { onConfirm(customAmount) }
+            }
+        } else {
+            Column(
+                modifier = Modifier.weight(1f).padding(horizontal = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(text = confirmLabel, fontSize = if (compact) 16.sp else 18.sp, fontWeight = FontWeight.SemiBold, color = OnSurface, textAlign = TextAlign.Center)
+            }
+
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ActionButton("CONFIRM", barColor, Color.Black, buttonHeight, Modifier.weight(1f)) { onConfirm(confirmAmount) }
+                ActionButton("CUSTOM", Accent, OnAccent, buttonHeight, Modifier.weight(1f)) { showCustom = true }
+            }
+            ActionButton(
+                label = "CANCEL",
+                backgroundColor = Surface,
+                textColor = OnSurfaceVariant,
+                height = buttonHeight,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                onClick = onCancel,
+            )
+        }
     }
 }
 

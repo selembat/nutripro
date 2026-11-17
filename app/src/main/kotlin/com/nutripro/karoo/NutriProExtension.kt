@@ -68,6 +68,8 @@ class NutriProExtension : KarooExtension("nutripro", BuildConfig.VERSION_NAME) {
             FluidDebtDataType(preferences, tracker, extension),
             SodiumDebtDataType(preferences, tracker, extension),
             RidePlanDataType(preferences, extension),
+            QuickSipDataType(preferences, tracker, extension),
+            QuickSodiumLogDataType(preferences, tracker, extension),
         )
     }
 

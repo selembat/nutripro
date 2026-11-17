@@ -132,11 +132,11 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(if (isCompact) 12.dp else 16.dp),
         ) {
             ProfileSection(preferences, isCompact)
-            SweatCalibrationSection(preferences, isCompact)
             FoodTemplatesSection(preferences, isCompact)
             FuelingSection(preferences, isCompact)
             OptionsSection(preferences, isCompact)
             TestingSection(preferences, isCompact)
+            SweatCalibrationSection(preferences, isCompact)
             AboutSection(isCompact)
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -176,9 +176,71 @@ private fun ProfileSection(preferences: Preferences, isCompact: Boolean) {
     val weight = rememberPrefField(preferences.weightOverride) { preferences.weightOverride = it }
 
     SettingsSection(title = "PROFILE") {
+        SourceToggleRow(
+            label = "FTP",
+            isCustom = ftp.value > 0,
+            onSelectProfile = { ftp.set(0) },
+            onSelectCustom = { if (ftp.value <= 0) ftp.set(200) },
+            isCompact = isCompact,
+        )
+        CardDivider()
         FtpRow(value = ftp.value, onUpdate = ftp::set, isCompact = isCompact)
         CardDivider()
+        SourceToggleRow(
+            label = "Weight",
+            isCustom = weight.value > 0f,
+            onSelectProfile = { weight.set(0f) },
+            onSelectCustom = { if (weight.value <= 0f) weight.set(70f) },
+            isCompact = isCompact,
+        )
+        CardDivider()
         WeightRow(value = weight.value, onUpdate = weight::set, isCompact = isCompact)
+    }
+}
+
+@Composable
+private fun SourceToggleRow(
+    label: String,
+    isCustom: Boolean,
+    onSelectProfile: () -> Unit,
+    onSelectCustom: () -> Unit,
+    isCompact: Boolean,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = if (isCompact) 8.dp else 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "$label source",
+            fontSize = if (isCompact) 11.sp else 12.sp,
+            color = OnSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            SourcePill(text = "Karoo", selected = !isCustom, onClick = onSelectProfile, isCompact = isCompact)
+            SourcePill(text = "Custom", selected = isCustom, onClick = onSelectCustom, isCompact = isCompact)
+        }
+    }
+}
+
+@Composable
+private fun SourcePill(text: String, selected: Boolean, onClick: () -> Unit, isCompact: Boolean) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(if (selected) Accent else SurfaceVariant)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            fontSize = if (isCompact) 9.sp else 10.sp,
+            fontWeight = FontWeight.Black,
+            color = if (selected) Color.White else OnSurfaceVariant,
+        )
     }
 }
 
